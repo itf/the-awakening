@@ -1,0 +1,118 @@
+#############
+# There are 2 types of structures: TEXT and WORDS
+# WORDS are clickable.
+# TEXT contain words.
+#
+# FLAGS:
+# When you click on a WORD, it might set a flag, that can be used for conditionals.
+#
+# TEXT-KEYWORDS:
+# You have access to the keywords of the texts that are being displayed, which can be used to modify the behavior of the WORDS.
+# 
+###############
+
+begin:
+    text: $start$
+
+rooftop-start:
+    text: You are on a [rooftop1]. $rooftop_state$
+    
+any-rooftop-text:
+    text: It's a [rooftop2] like [any-other-word-rooftop]. $rooftop_characteristics$
+
+any-other-text:
+    text: You've been to too many rooftops to care about them anymore.
+    
+dark-rooftop-state:
+    text: It's [dark-rooftop-dark].
+    
+rooftop-shadows-state:
+    text: Shadows are dancing in the distance.
+    text-flag: 
+        - rooftop-shadows: 1
+
+rooftop-night:
+    text: It's [night-word-rooftop] on the [rooftop2]. $sky_state$
+    
+dark-night:
+    text: The [sky-word-rooftop] is [dark-word-sky-rooftop].
+    
+beautiful-night:
+    text: The [sky-word-rooftop] is [beautiful-word-sky-rooftop].
+
+################################
+# Words describing the rooftop
+rooftop1:
+    word: rooftop
+    click:
+        - condition: 
+            flags:
+                - investigate-rooftop
+          substitutions:
+            start: any-rooftop-text
+        - condition: 
+          flag: investigate-rooftop
+          substitutions:
+            rooftop_state: dark-rooftop-state
+              
+rooftop2:
+    word: rooftop
+    click:
+        - condition:
+          flag: 
+          substitutions:
+            start: rooftop-start
+          remove-flag: 
+
+dark-rooftop-dark:
+    word: dark
+    click:
+          - condition: 
+              flags:
+                - investigate-rooftop
+                - dark-rooftop
+                - dark-sky
+            substitutions:
+              rooftop_state: rooftop-shadows-state
+          - substitutions:
+                start: rooftop-night
+            flag: dark-rooftop
+
+any-other-word-rooftop:
+    word: any other
+    click:
+        - condition:
+            not-flag: any-other-rooftop
+          substitutions:
+            rooftop_characteristics: any-other-text
+          flag: any-other-rooftop
+
+############
+# Sky at the rooftop
+night-word-rooftop:
+    word: night
+    click:
+        - substitutions:
+            sky_state: dark-night
+
+
+sky-word-rooftop:
+    word: sky
+    click:
+        - substitutions:
+            sky_state: beautiful-night
+    
+dark-word-sky-rooftop:
+    word: dark
+    click:
+        - substitutions:
+          flag: dark-sky
+          remove_flags:
+            - beautiful-sky
+beautiful-word-sky-rooftop:
+    word: beautiful
+    click:
+        - substitutions: 
+          remove_flags:
+            - dark-sky
+          flag: beautiful-sky
