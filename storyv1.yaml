@@ -1,8 +1,0 @@
-start:
-    text: You are on a [rooftop1]. $1$
-rooftop1:
-    word: rooftop
-    substitute:
-        $1$: roof-dark
-roof-dark:
-    text: It's [dark]
