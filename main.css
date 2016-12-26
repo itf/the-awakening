@@ -127,3 +127,31 @@ img {
   from { max-width: 100% }
   to { max-width: 0% }
 }
+
+
+/* For editting */
+pre {
+    white-space: pre-wrap;       /* Since CSS 2.1 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+.flash-dark {
+    animation: 
+       flashDark 1.0s steps(40, end)
+}
+
+@keyframes flashDark {
+  from { background: #000 }
+  to { background: ##fff }
+}
+
+#text-background{
+ /* height:100%;
+  width:100%;
+  max-width:inherit;
+  max-height:inherit;
+  position: absolute;*/
+}

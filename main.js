@@ -14,25 +14,27 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     var previous_substituted_text = [];
     var new_substituted_text = [];
     var html_story = document.getElementById("story");
-    var html_story_yaml = document.getElementById("story_yaml");
     var flags = {};
+    var text_flags = {};
+    
+    //For debugging: 
+    var html_story_yaml = document.getElementById("story_yaml");
     
     
     
     ///Helper functions for the story
     var get_substitute_text = function(story_dictionary, text_keyword){
+        if (!story_dictionary[text_keyword]){
+                console.log("UNDEFINED "+ text_keyword);
+                return "--UNDEFINED--";
+        }
         return story_dictionary[text_keyword].text;
     };
     
     
-    var substitute_text = function (text_to_substitute, substitute_dictionary, story_dictionary, previous_substituted_text, new_substituted_text) {
+    var substitute_text = function (text_to_substitute, substitute_dictionary, story_dictionary, previous_substituted_text, new_substituted_text, parent_dummy_span) {
         for (var key in substitute_dictionary){
             var text_keyword = substitute_dictionary[key]
-            if (!story_dictionary[text_keyword]){
-                console.log("UNDEFINED");
-                delete substitute_dictionary[key];
-                return text_to_substitute;
-            }
             var substitute_text_content = get_substitute_text(story_dictionary, text_keyword);
             var to_substitute = '$'+key+'$';
             var contains_string = text_to_substitute.includes(to_substitute);
@@ -45,17 +47,23 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 new_text_html.innerHTML = substitute_text_content;
                 if(substitute_text_content != previous_substituted_text[key]){
                     if (previous_substituted_text[key]){
-                        new_text_html.className = 'substituting-text'
+                        new_text_html.className = 'substituting-text '
                     }
                     else{
-                        new_text_html.className = 'new-text'
+                        new_text_html.className = 'new-text '
                     }
                 }
                 else{
-                    new_text_html.className = 'old-text'
+                    new_text_html.className = 'old-text '
                 }
                 var substitute_text_with_html =  new_text_html.outerHTML;
-                substitute_text_with_html = substitute_text(substitute_text_with_html, substitute_dictionary, story_dictionary,  previous_substituted_text, new_substituted_text);
+                if (parent_dummy_span){
+                    var span_tags = parent_dummy_span.split("$");
+                    substitute_text_with_html = span_tags[1]+substitute_text_with_html+span_tags[0];
+                }
+                new_text_html.innerHTML="$";
+                var new_dummy_span = new_text_html.outerHTML;
+                substitute_text_with_html = substitute_text(substitute_text_with_html, substitute_dictionary, story_dictionary,  previous_substituted_text, new_substituted_text, new_dummy_span);
                 text_to_substitute = text_to_substitute.replace(to_substitute, substitute_text_with_html);
             }
         }
@@ -63,21 +71,26 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     };
 
     /// Helper functions for generating HTML
+    
 
     var action_click_word = function(word_dict_object, text_dict, flags){
         var function_array = [];
         if (word_dict_object.click){
-            var substitute_array = word_dict_object.click;
-            for (var s in  substitute_array){
-                var substitution = substitute_array[s];
-                if (!substitution.condition || conditions_met(substitution.condition, flags)){
-                    function_array.push(add_to_substitute_dict(substitution.substitutions, text_dict));
-                    if (substitution.flag){
-                        function_array.push(add_flag(substitution.flag, flags));
+            var click_array = word_dict_object.click;
+            for (var s in  click_array){
+                var click_action = click_array[s];
+                if (!click_action.condition || conditions_met(click_action.condition, flags)){
+                    function_array.push(()=>add_to_substitute_dict(click_action.substitutions, text_dict));
+                    if (click_action.flag){
+                        function_array.push(()=>add_flag(click_action.flag, flags));
                     }
-                    if (substitution.remove_flags){
-                        function_array.push(remove_flags(substitution.remove_flags, flags));
+                    if (click_action.remove_flags){
+                        function_array.push(()=>remove_flags(click_action.remove_flags, flags));
                     }
+                    if (click_action.body_class){
+                        function_array.push(()=>add_class_to_body(click_action.body_class));
+                    }
+                    
                     break;
                 }
             }
@@ -123,7 +136,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             word = document.getElementById(key)
             var word_click_function = action_click_word(dictionary[key], text_dict, flags);
             if (word_click_function){
-                word.className = 'clickable-word'
+                word.className += 'clickable-word '
                 word.addEventListener("click", word_click_function, false); 
             }
         }
@@ -141,6 +154,12 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         substitute_words(html_story, story_dict, text_dict, flags);
     }
     
+    var clear_class_body = function(){
+        var body = document.getElementById("body");
+        body.className = " ";
+    }
+            
+    
     var copy_dict = function(dict_to_copy_from, dict_to_copy_to){    
         Object.keys(dict_to_copy_from).forEach(function(key) {
          dict_to_copy_to[ key ] = dict_to_copy_from[ key ];
@@ -150,26 +169,28 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     // Actions
 
     var add_to_substitute_dict =  function(substitute_dict_object, text_dict){
-        return  function() { 
-            for (var s in substitute_dict_object){
-                text_dict[s] = substitute_dict_object[s];
-            }
-        };
+        for (var s in substitute_dict_object){
+            text_dict[s] = substitute_dict_object[s];
+        }
     }
     
     var add_flag =  function(flag, flags){
-        return function(){
-            flags[flag] = true;
-        }
+        flags[flag] = true;
     }
     
     var remove_flags =  function(flags_to_remove, flags){
-        return function(){
-            for (var f in flags_to_remove){
-                delete flags[flags_to_remove[f]];
-            }
+        for (var f in flags_to_remove){
+            delete flags[flags_to_remove[f]];
         }
+    
     }
+    
+    var add_class_to_body = function(class_name){
+        var body = document.getElementById("body");
+        body.className += " "+class_name;
+    }
+    
+    
     
     // Actions helper
 
@@ -178,7 +199,15 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         if (condition_flags){
             for (var f in condition_flags){
                 if (!flags[condition_flags[f]]){
-                    return false
+                    return false;
+                }
+            }
+        }
+        var condition_not_flags = condition.not_flags;
+        if (condition_not_flags){
+            for (var f in condition_not_flags){
+                if (flags[condition_not_flags[f]]){
+                    return false;
                 }
             }
         }
@@ -197,7 +226,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     //Functions to help with editing
     
     var editing = function(){
-        html_story_yaml.innerHTML=yaml.safeDump(story);
+        html_story_yaml.value=story_yaml;
         add_functions_to_buttons();
         add_functions_to_content_editable();
     }
@@ -209,16 +238,37 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 e.preventDefault();
             }
         }
+        add_ctrl_s();
     }
     
     var reload_yaml_from_html = function(){
-        story = yaml.load(html_story_yaml.innerHTML);
+        story = yaml.load(html_story_yaml.value);
         generate_story();
     }
     
     var add_functions_to_buttons = function(){
         var reload_button = document.getElementById("reload_yaml");
         reload_button.addEventListener("click", reload_yaml_from_html, false); 
+    }
+    
+    var add_ctrl_s = function(){
+        html_story_yaml.addEventListener("keydown", function(e) {
+            if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+                e.preventDefault();
+                downloadInnerHtml("story.yaml", html_story_yaml, "yaml");
+                alert('captured');
+            }
+        }, false);
+    }
+    
+    var downloadInnerHtml = function(filename, el, mimeType) {
+        var elHtml = el.value;
+        var link = document.createElement('a');
+        mimeType = mimeType || 'text/plain';
+
+        link.setAttribute('download', filename);
+        link.setAttribute('href', 'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(elHtml));
+        link.click(); 
     }
     
     //Generate story

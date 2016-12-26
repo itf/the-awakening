@@ -5,6 +5,8 @@
 #
 # FLAGS:
 # When you click on a WORD, it might set a flag, that can be used for conditionals.
+# For convenience, the keyword of the text substitution is automatically added as a flag 
+# whose value increase by 1 for every turn the text is present. It is removes as soon as the text is not displayed any longer.
 #
 # TEXT-KEYWORDS:
 # You have access to the keywords of the texts that are being displayed, which can be used to modify the behavior of the WORDS.
@@ -15,16 +17,16 @@ begin:
     text: $start$
 
 rooftop-start:
-    text: You are on a [rooftop1]. $rooftop_state$
+    text: You are on a [rooftop-rft-1]. $rooftop_state$
     
-any-rooftop-text:
-    text: It's a [rooftop2] like [any-other-word-rooftop]. $rooftop_characteristics$
+rooftop-any:
+    text: It's a [rooftop-rft-2] like [any_other-rft]. $rooftop_characteristics$
 
-any-other-text:
+rooftop-any-other:
     text: You've been to too many rooftops to care about them anymore.
     
-dark-rooftop-state:
-    text: It's [dark-rooftop-dark].
+rooftop-dark-state:
+    text: It's [dark-rft].
     
 rooftop-shadows-state:
     text: Shadows are dancing in the distance.
@@ -32,30 +34,30 @@ rooftop-shadows-state:
         - rooftop-shadows: 1
 
 rooftop-night:
-    text: It's [night-word-rooftop] on the [rooftop2]. $sky_state$
+    text: It's [night-rft] on the [rooftop-rft-2]. $sky_state$
     
-dark-night:
-    text: The [sky-word-rooftop] is [dark-word-sky-rooftop].
+rooftop-dark-night:
+    text: The [sky-rft-sky] is [dark-rft-sky].
     
-beautiful-night:
-    text: The [sky-word-rooftop] is [beautiful-word-sky-rooftop].
+rooftop-beautiful-night:
+    text: You see the [beautiful-rft-sky] night [sky-rft-sky].
 
 ################################
 # Words describing the rooftop
-rooftop1:
+rooftop-rft-1:
     word: rooftop
     click:
         - condition: 
             flags:
                 - investigate-rooftop
           substitutions:
-            start: any-rooftop-text
+            start: rooftop-any
         - condition: 
           flag: investigate-rooftop
           substitutions:
-            rooftop_state: dark-rooftop-state
+            rooftop_state: rooftop-dark-state
               
-rooftop2:
+rooftop-rft-2:
     word: rooftop
     click:
         - condition:
@@ -64,7 +66,7 @@ rooftop2:
             start: rooftop-start
           remove-flag: 
 
-dark-rooftop-dark:
+dark-rft:
     word: dark
     click:
           - condition: 
@@ -78,38 +80,40 @@ dark-rooftop-dark:
                 start: rooftop-night
             flag: dark-rooftop
 
-any-other-word-rooftop:
+any_other-rft:
     word: any other
     click:
         - condition:
-            not-flag: any-other-rooftop
+            not_flags: 
+                - any-other-rooftop
           substitutions:
-            rooftop_characteristics: any-other-text
+            rooftop_characteristics: rooftop-any-other
           flag: any-other-rooftop
 
 ############
 # Sky at the rooftop
-night-word-rooftop:
+night-rft:
     word: night
     click:
         - substitutions:
-            sky_state: dark-night
+            sky_state: rooftop-dark-night
 
 
-sky-word-rooftop:
+sky-rft-sky:
     word: sky
     click:
         - substitutions:
-            sky_state: beautiful-night
+            sky_state: rooftop-beautiful-night
     
-dark-word-sky-rooftop:
+dark-rft-sky:
     word: dark
     click:
         - substitutions:
           flag: dark-sky
+          body_class: flash-dark
           remove_flags:
             - beautiful-sky
-beautiful-word-sky-rooftop:
+beautiful-rft-sky:
     word: beautiful
     click:
         - substitutions: 
