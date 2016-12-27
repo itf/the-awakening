@@ -30,7 +30,7 @@ rooftop-dark-state:
     
 rooftop-shadows-state:
     text: Shadows are dancing in the distance.
-    text-flag: 
+    text-flags: 
         - rooftop-shadows: 1
 
 rooftop-night:
@@ -52,8 +52,11 @@ rooftop-rft-1:
                 - investigate-rooftop
           substitutions:
             start: rooftop-any
+          flags: 
+            - investigate-rooftop: 1
         - condition: 
-          flag: investigate-rooftop
+          flags: 
+            - investigate-rooftop: 1
           substitutions:
             rooftop_state: rooftop-dark-state
               
@@ -61,10 +64,10 @@ rooftop-rft-2:
     word: rooftop
     click:
         - condition:
-          flag: 
+          flags: 
           substitutions:
             start: rooftop-start
-          remove-flag: 
+          remove-flags: 
 
 dark-rft:
     word: dark
@@ -78,7 +81,8 @@ dark-rft:
               rooftop_state: rooftop-shadows-state
           - substitutions:
                 start: rooftop-night
-            flag: dark-rooftop
+            flags:  
+                - dark-rooftop
 
 any_other-rft:
     word: any other
@@ -88,7 +92,8 @@ any_other-rft:
                 - any-other-rooftop
           substitutions:
             rooftop_characteristics: rooftop-any-other
-          flag: any-other-rooftop
+          flags: 
+            - any-other-rooftop
 
 ############
 # Sky at the rooftop
@@ -109,8 +114,10 @@ dark-rft-sky:
     word: dark
     click:
         - substitutions:
-          flag: dark-sky
-          body_class: flash-dark
+          flags: 
+            - dark-sky
+          body_class: 
+            - flash-dark
           remove_flags:
             - beautiful-sky
 beautiful-rft-sky:
@@ -119,4 +126,4 @@ beautiful-rft-sky:
         - substitutions: 
           remove_flags:
             - dark-sky
-          flag: beautiful-sky
+          flags: beautiful-sky

@@ -14,8 +14,15 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     var previous_substituted_text = [];
     var new_substituted_text = [];
     var html_story = document.getElementById("story");
-    var flags = {};
-    var text_flags = {};
+    
+    var flags = {}; //Flags set by words. Permanent
+    var text_flags = {}; // Flags set by text Temporary
+    
+    var permanent_styles_list = []; //Defines which styles for the body are permanent ones
+    var temporary_styles_list = ["flash-dark"]; //Defines which styles for the body are temporary ones, such as dark flashes.
+    
+    var p_styles = []; // Permanent styles applied to the body
+    var t_styles = []; // Temporary styles applied to the body
     
     //For debugging: 
     var html_story_yaml = document.getElementById("story_yaml");
@@ -32,7 +39,12 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     };
     
     
-    var substitute_text = function (text_to_substitute, substitute_dictionary, story_dictionary, previous_substituted_text, new_substituted_text, parent_dummy_span) {
+    var substitute_text = function (text_to_substitute, 
+                                     substitute_dictionary, 
+                                     story_dictionary, 
+                                     previous_substituted_text, 
+                                     new_substituted_text, 
+                                     parent_dummy_span) {
         for (var key in substitute_dictionary){
             var text_keyword = substitute_dictionary[key]
             var substitute_text_content = get_substitute_text(story_dictionary, text_keyword);
@@ -81,14 +93,14 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 var click_action = click_array[s];
                 if (!click_action.condition || conditions_met(click_action.condition, flags)){
                     function_array.push(()=>add_to_substitute_dict(click_action.substitutions, text_dict));
-                    if (click_action.flag){
-                        function_array.push(()=>add_flag(click_action.flag, flags));
+                    if (click_action.flags){
+                        function_array.push(()=>add_flags(click_action.flags, flags));
                     }
                     if (click_action.remove_flags){
                         function_array.push(()=>remove_flags(click_action.remove_flags, flags));
                     }
                     if (click_action.body_class){
-                        function_array.push(()=>add_class_to_body(click_action.body_class));
+                        function_array.push(()=>add_styles_to_body(click_action.body_class));
                     }
                     
                     break;
@@ -130,17 +142,20 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             }  
         }
 
-        for (var index in keys){
+        add_interactivity_to_words(keys, dictionary, text_dict, flags);
+    }
+    
+    var add_interactivity_to_words = function(word_keys, dictionary, text_dict, flags){
+        for (var index in word_keys){
             //add on click events
-            var key = keys[index];
-            word = document.getElementById(key)
+            var key = word_keys[index];
+            var word = document.getElementById(key)
             var word_click_function = action_click_word(dictionary[key], text_dict, flags);
             if (word_click_function){
-                word.className += 'clickable-word '
+                word.classList.add('clickable-word');
                 word.addEventListener("click", word_click_function, false); 
             }
         }
-        return text_to_substitute;
     }
 
     var remove_markers = function(text){
@@ -148,14 +163,14 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         return text;
     }
 
-    var to_html = function(html_story, text, story_dict, text_dict, flags){
+    var proccess_words = function(html_story, text, story_dict, text_dict, flags){
         var text = remove_markers(text);
         html_story.innerHTML = text;
         substitute_words(html_story, story_dict, text_dict, flags);
     }
     
     var clear_class_body = function(){
-        var body = document.getElementById("body");
+        var body = document.getElementById("text-background");
         body.className = " ";
     }
             
@@ -165,6 +180,30 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
          dict_to_copy_to[ key ] = dict_to_copy_from[ key ];
         }); 
     }
+    
+    var apply_styles_to_el = function(temporary_styles_list, permanent_styles_list, el){
+        var class_list = el.classList;
+        var length_classes = class_list.length;
+        for(var i =0; i<length_classes; i++){
+            var elClass = class_list[i];
+            if (!permanent_styles_list.includes(elClass)){
+                el.classList.remove(elClass);
+            }
+        }
+        add_classes_to_el(temporary_styles_list, el);
+        add_classes_to_el(permanent_styles_list, el);
+        temporary_styles_list.length=0;
+    }
+    
+    var add_classes_to_el = function(classes_list, el){
+        for (var s in classes_list){
+            var style = classes_list[s]; 
+            add_class(style, el);
+        }
+
+    }
+    
+
 
     // Actions
 
@@ -174,9 +213,25 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         }
     }
     
-    var add_flag =  function(flag, flags){
-        flags[flag] = true;
-    }
+    var add_flags =  function(flags_from_word, flags){
+        for (var f in flags_from_word){
+            var flag = flags_from_word[f];
+            if (typeof flag == 'string'){
+                flags[flag] = true;
+            }
+            else{
+                for (var flag_name in flag){
+                    if (flags[flag_name]){
+                        flags[flag_name]+=flag[flag_name];
+                    }     
+                    else{
+                        flags[flag_name] = flag[flag_name];
+                    }
+                }
+
+            }
+        }
+    };
     
     var remove_flags =  function(flags_to_remove, flags){
         for (var f in flags_to_remove){
@@ -185,14 +240,43 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     }
     
-    var add_class_to_body = function(class_name){
-        var body = document.getElementById("body");
-        body.className += " "+class_name;
+    var add_styles_to_body = function(styles){
+        if (styles.constructor === Array){
+            for (var s in styles){
+                var style = styles[s];
+                if (permanent_styles_list.includes(style)){
+                    add_permanent_style_to_body(style);
+                }
+                if (temporary_styles_list.includes(style)){
+                    add_temporary_style_to_body(style);
+                }
+            }
+        }
+        else{ //assume is string
+            if (permanent_styles_list.includes(styles)){
+                add_permanent_style_to_body(styles);
+            }
+            if (temporary_styles_list.includes(styles)){
+                add_temporary_style_to_body(styles);
+            }
+            
+        }
     }
     
     
     
     // Actions helper
+    var add_permanent_style_to_body = function(style){
+        p_styles.push(style);
+    }
+    
+    var add_temporary_style_to_body = function(style){
+        t_styles.push(style);
+    }
+        
+    var add_class = function(class_name, el){
+        setTimeout(()=>el.classList.add(class_name), 30 );
+    }
 
     var conditions_met = function(condition, flags){
         var condition_flags = condition.flags;
@@ -278,7 +362,10 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         var text = substitute_text(start_text, substitute_text_dictionary, story, previous_substituted_text, new_substituted_text);
         previous_substituted_text=new_substituted_text;
         copy_dict(new_substituted_text, previous_substituted_text);
-        to_html(html_story, text, story, substitute_text_dictionary, flags);
+        proccess_words(html_story, text, story, substitute_text_dictionary, flags);
+        var body = document.getElementById("text-background");
+        apply_styles_to_el(t_styles,p_styles,body);
+        
     }   
     
     
