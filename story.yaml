@@ -63,6 +63,9 @@ rooftop-moon-forest:
     text: "<br> The bright moonlight is reflected by the crowns of some [trees-rft-sky] by the horizon."
 .:
   text: .
+  
+END:
+    text: ✴✴✴  ✴✴✴ <br> [undo]?
 
 ################################
 # Words describing the rooftop
@@ -204,3 +207,7 @@ fall-rft-ledge:
     - m: True
       body_class: 
       - flash-red
+      
+undo:
+  word: Undo
+  click:
