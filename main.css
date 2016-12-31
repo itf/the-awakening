@@ -66,29 +66,29 @@ img {
 
 
 .story{
-  display: inline-block;
+  display: inline;
   overflow: hidden; /* Ensures the content is not revealed until the animation */
-  white-space: nowrap; /* Keeps the content on a single line */
+  white-space: wrap; /* Keeps the content on a single line */
   margin: 0 auto; /* Gives that scrolling effect as the typing happens */
-  letter-spacing: .1em; /* Adjust as needed */
+  letter-spacing: .03em; /* Adjust as needed */
   vertical-align: text-bottom;
 
 }
 .new-text {
-  display: inline-block;
+  display: inline;
   overflow: hidden; /* Ensures the content is not revealed until the animation */
-  white-space: nowrap; /* Keeps the content on a single line */
+  white-space: wrap; /* Keeps the content on a single line */
   margin: 0 auto; /* Gives that scrolling effect as the typing happens */
   vertical-align: bottom;
   animation: 
-    typing 1.0s steps(40, end)
+    typing 0.7s steps(40, end)
 }
 
 .substituted-text {
-  display: inline-block;
+  display: inline;
   pointer-events: none;
   overflow: hidden; /* Ensures the content is not revealed until the animation */
-  white-space: nowrap; /* Keeps the content on a single line */
+  white-space: wrap; /* Keeps the content on a single line */
   margin: 0 auto; /* Gives that scrolling effect as the typing happens */
   vertical-align: bottom;
   max-width: 0;
@@ -97,29 +97,31 @@ img {
 }
 
 .substituting-text {
-  display: inline-block;
+  display: inline;
   overflow: hidden; /* Ensures the content is not revealed until the animation */
-  white-space: nowrap; /* Keeps the content on a single line */
+  white-space: wrap; /* Keeps the content on a single line */
   margin: 0 auto; /* Gives that scrolling effect as the typing happens */
   vertical-align: bottom;
   -webkit-animation-delay: 0.5s; /* Safari 4.0 - 8.0 */
   animation-delay: 0.5s;
   animation: 
-    typing 1.0s steps(40, end)
+    typing 0.7s steps(40, end)
 }
 
 .old-text {
-  display: inline-block;
+  display: inline;
   overflow: hidden; /* Ensures the content is not revealed until the animation */
-  white-space: nowrap; /* Keeps the content on a single line */
+  white-space: wrap; /* Keeps the content on a single line */
   margin: 0 auto; /* Gives that scrolling effect as the typing happens */
   vertical-align: bottom;
 }
 
 /* The typing effect */
 @keyframes typing {
-  from { max-width: 0 }
-  to { max-width: 100% }
+  from { -webkit-clip-path:  inset(0% 100% 0% 0%);
+    clip-path:  inset(0% 100% 0% 0%); }
+  to { -webkit-clip-path:  inset(0% 0% 0% 0%);
+    clip-path:  inset(0% 0% 0% 0%);}
 }
 
 /* The deleting effect */
@@ -149,7 +151,8 @@ pre {
 }
 
 #text-background{
- /* height:100%;
+    /*
+  height:100%;
   width:100%;
   max-width:inherit;
   max-height:inherit;

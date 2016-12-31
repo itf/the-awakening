@@ -16,7 +16,7 @@ TODO
        
        Possibility 2: Modify old content.
        Sometimes certain nouns have some implicit concept with them. For example, the night sky is usually beautiful and starry, so clicking on sky can add those adjectives or modify dark ones.
-       Similarly, clicking on light/ fleshlight can make things get lighter, rather than exploring the fleshlight itself
+       Similarly, clicking on light/ flashlight can make things get lighter, rather than exploring the flashlight itself
        
        Possibility 3: Changing locations.
        Focusing on a place multiple times should allow you to be transported to that place. An example of this concept is:
@@ -40,21 +40,48 @@ TODO
     [] What happens when you click in verbs?
     Generally, it should not be possible to click on verbs, unless strictly necessary, for example "You decide to fight [fight]". In this case it can do something completely different
     or just behave as an important and strong substantive in its behaviour.
+    
+    [] How to use probability (when implemented) ?
+       Probability should never be used for content that is necessary for the story; unless it is in situations like: you are exploring the forest (10% chance of finding monster, etc).
         
 
 [x] Make sure "old text" is not inside "new text". possible implementation, create element with the correct class and content = $. Split based on $, and then reverse the order of the elements.
+
+[x] Make it so that every present text sets a flag whose value increase by one for every turn the text has been present and then returns to 0 as soon as it dissapears
+
+[x] Make everything in the yaml be allowed to be either an array or a single value.
+
+[x] Make so that text can depends on flags
+
+[x] make it so that flags can check for values (for example, darkness > 5)
+
+[Updated] Fix typewriter effect to work with multiple lines. Sadly, this involves using jquery.
+    [x] Solved without jquery by using clip-path. Breaks compatibility with basically everything. 
+
+[x] typewriter kinda effect using clip path
+
+[x] Make sure all text continues in line if needed (css fix inline-block)
+
+[x] Display the substitution words under the text.
+
+[] Button to add word
+
+[x] Make sure useless buttons are not clickable anymore
+
+[] Create at least 2 min of gameplay.
+
+[] Timed events
 
 [] Split substitute_text into multiple functions
 
 [x] Write undefined on the text if a substitution text is not defined yet, besides logging the substitution.
 
-[] Allow effects! Add style to the body of the program. Create 2 arrays, 1 for temporary and the other for permanent effects on the text.
+[x] Allow effects! Add style to the body of the program. Create 2 arrays, 1 for temporary and the other for permanent effects on the text.
 
-[] Create some "dark" effect: flashes the screen dark
+[x] Create some "dark" effect: flashes the screen dark
 
-[] Make it so that every present text sets a flag whose value increase by one for every turn the text has been present and then returns to 0 as soon as it dissapears
 
-[] Specify naming convention for text and words. One idea is that all words are  word-(abbreviation of the place that the word is used), while the text is either "word that the text substitutes- place-what about the place" or "place - info bout the place"
+[partial x] Specify naming convention for text and words. One idea is that all words are  word-(abbreviation of the place that the word is used), while the text is either "word that the text substitutes- place-what about the place" or "place - info bout the place"
 
 [] Make it so that clicking words sets a flag as a syntatic sugar for allowing things to be clicked only once for example, or be clicked every few seconds or so
 
@@ -64,6 +91,6 @@ TODO
 
 [] Add probability to what the text shows or what the word does
 
-[] Make so that text can depends on flags
+[] Deploy to android using https://crosswalk-project.org/ 
 
-[] make it so that flags can check for values (for example, darkness > 5)
+https://tympanus.net/codrops/2012/04/17/rotating-words-with-css-animations/

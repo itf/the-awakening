@@ -30,12 +30,26 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     
     ///Helper functions for the story
-    var get_substitute_text = function(story_dictionary, text_keyword){
-        if (!story_dictionary[text_keyword]){
+    var get_substitute_text = function(story_dictionary, text_keyword, flags, text_flags){
+        var text = story_dictionary[text_keyword];
+        if (!text){
                 console.log("UNDEFINED "+ text_keyword);
                 return "--UNDEFINED--";
         }
-        return story_dictionary[text_keyword].text;
+        if (text.text){
+            return text.text;
+        }
+        else{ //Assume array of texts
+            var array_text = text;
+            for (var t in array_text){
+                text = array_text[t];
+                if (!text.cond || conditions_met(text.cond, flags, text_flags)){
+                    return text.text;
+                }
+
+            }
+        }
+        return "--UNDEFINED--";
     };
     
     
@@ -44,15 +58,19 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                                      story_dictionary, 
                                      previous_substituted_text, 
                                      new_substituted_text, 
-                                     parent_dummy_span) {
+                                     parent_dummy_span,
+                                     flags,
+                                     text_flags,
+                                     present_text_keys) {
         for (var key in substitute_dictionary){
             var text_keyword = substitute_dictionary[key]
-            var substitute_text_content = get_substitute_text(story_dictionary, text_keyword);
+            var substitute_text_content = get_substitute_text(story_dictionary, text_keyword, flags, text_flags);
             var to_substitute = '$'+key+'$';
             var contains_string = text_to_substitute.includes(to_substitute);
 
-
-            if (contains_string){    
+            if (contains_string){
+                add_flags(text_keyword,text_flags);
+                present_text_keys.push(text_keyword);
                 new_substituted_text[key] = substitute_text_content;
                 var new_text_html = get_dummy_word();
                 new_text_html.id = key;
@@ -75,7 +93,15 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 }
                 new_text_html.innerHTML="$";
                 var new_dummy_span = new_text_html.outerHTML;
-                substitute_text_with_html = substitute_text(substitute_text_with_html, substitute_dictionary, story_dictionary,  previous_substituted_text, new_substituted_text, new_dummy_span);
+                substitute_text_with_html = substitute_text(substitute_text_with_html, 
+                                                            substitute_dictionary, 
+                                                            story_dictionary,  
+                                                            previous_substituted_text, 
+                                                            new_substituted_text, 
+                                                            new_dummy_span,
+                                                            flags,
+                                                            text_flags,
+                                                            present_text_keys);
                 text_to_substitute = text_to_substitute.replace(to_substitute, substitute_text_with_html);
             }
         }
@@ -85,19 +111,24 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     /// Helper functions for generating HTML
     
 
-    var action_click_word = function(word_dict_object, text_dict, flags){
+    var action_click_word = function(word_dict_object, text_dict, flags, text_flags){
         var function_array = [];
         if (word_dict_object.click){
             var click_array = word_dict_object.click;
             for (var s in  click_array){
                 var click_action = click_array[s];
-                if (!click_action.condition || conditions_met(click_action.condition, flags)){
-                    function_array.push(()=>add_to_substitute_dict(click_action.substitutions, text_dict));
+                if (!click_action.cond || conditions_met(click_action.cond, flags, text_flags)){
+                    
+                    if (!is_useful_word(click_action, text_dict, flags)){
+                        return null;
+                    }
+                    
+                    function_array.push(()=>add_to_substitute_dict(click_action.subs, text_dict));
                     if (click_action.flags){
                         function_array.push(()=>add_flags(click_action.flags, flags));
                     }
-                    if (click_action.remove_flags){
-                        function_array.push(()=>remove_flags(click_action.remove_flags, flags));
+                    if (click_action.rm_flags){
+                        function_array.push(()=>remove_flags(click_action.rm_flags, flags));
                     }
                     if (click_action.body_class){
                         function_array.push(()=>add_styles_to_body(click_action.body_class));
@@ -123,7 +154,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         return dummy_word;
     }
 
-    var substitute_words = function (html_story, dictionary, text_dict, flags){
+    var substitute_words = function (html_story, dictionary, text_dict, flags, text_flags){
         var original_text = html_story.innerHTML;
         var text_to_substitute = html_story.innerHTML;
         var keys = [];
@@ -142,15 +173,15 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             }  
         }
 
-        add_interactivity_to_words(keys, dictionary, text_dict, flags);
+        add_interactivity_to_words(keys, dictionary, text_dict, flags, text_flags);
     }
     
-    var add_interactivity_to_words = function(word_keys, dictionary, text_dict, flags){
+    var add_interactivity_to_words = function(word_keys, dictionary, text_dict, flags, text_flags){
         for (var index in word_keys){
             //add on click events
             var key = word_keys[index];
             var word = document.getElementById(key)
-            var word_click_function = action_click_word(dictionary[key], text_dict, flags);
+            var word_click_function = action_click_word(dictionary[key], text_dict, flags, text_flags);
             if (word_click_function){
                 word.classList.add('clickable-word');
                 word.addEventListener("click", word_click_function, false); 
@@ -163,10 +194,10 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         return text;
     }
 
-    var proccess_words = function(html_story, text, story_dict, text_dict, flags){
+    var proccess_words = function(html_story, text, story_dict, text_dict, flags, text_flags){
         var text = remove_markers(text);
         html_story.innerHTML = text;
-        substitute_words(html_story, story_dict, text_dict, flags);
+        substitute_words(html_story, story_dict, text_dict, flags, text_flags);
     }
     
     var clear_class_body = function(){
@@ -214,22 +245,28 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     }
     
     var add_flags =  function(flags_from_word, flags){
+        if (flags_from_word.constructor !== Array){
+            flags_from_word = [flags_from_word];
+        }
         for (var f in flags_from_word){
             var flag = flags_from_word[f];
+            var value = 0;
+            var flag_name;
             if (typeof flag == 'string'){
-                flags[flag] = true;
+                flag_name = flag;
+                value = 1;
             }
             else{
-                for (var flag_name in flag){
-                    if (flags[flag_name]){
-                        flags[flag_name]+=flag[flag_name];
-                    }     
-                    else{
-                        flags[flag_name] = flag[flag_name];
-                    }
+                for (flag_name in flag){
+                    value = flag[flag_name]
                 }
-
             }
+            if (flags[flag_name]){
+                flags[flag_name] += value;
+            }     
+            else{
+                flags[flag_name] = value;
+            }   
         }
     };
     
@@ -241,25 +278,17 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     }
     
     var add_styles_to_body = function(styles){
-        if (styles.constructor === Array){
-            for (var s in styles){
-                var style = styles[s];
-                if (permanent_styles_list.includes(style)){
-                    add_permanent_style_to_body(style);
-                }
-                if (temporary_styles_list.includes(style)){
-                    add_temporary_style_to_body(style);
-                }
-            }
+        if (styles.constructor !== Array){
+            styles = [styles];
         }
-        else{ //assume is string
-            if (permanent_styles_list.includes(styles)){
-                add_permanent_style_to_body(styles);
+        for (var s in styles){
+            var style = styles[s];
+            if (permanent_styles_list.includes(style)){
+                add_permanent_style_to_body(style);
             }
-            if (temporary_styles_list.includes(styles)){
-                add_temporary_style_to_body(styles);
+            if (temporary_styles_list.includes(style)){
+                add_temporary_style_to_body(style);
             }
-            
         }
     }
     
@@ -275,22 +304,132 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     }
         
     var add_class = function(class_name, el){
-        setTimeout(()=>el.classList.add(class_name), 30 );
+        setTimeout(()=>el.classList.add(class_name), 10 );
     }
 
-    var conditions_met = function(condition, flags){
+    var add_flags =  function(flags_from_word, flags){
+        if (flags_from_word.constructor !== Array){
+            flags_from_word = [flags_from_word];
+        }
+        for (var f in flags_from_word){
+            var flag = flags_from_word[f];
+            var value = 0;
+            var flag_name;
+            if (typeof flag == 'string'){
+                flag_name = flag;
+                value = 1;
+            }
+            else{
+                for (flag_name in flag){
+                    value = flag[flag_name]
+                }
+            }
+            if (flags[flag_name]){
+                flags[flag_name] += value;
+            }     
+            else{
+                flags[flag_name] = value;
+            }   
+        }
+    };
+    
+    var is_useful_word = function(click_action, substitute_text_dictionary, flags){
+        if (click_action.m){
+            return true;
+        }
+        var subs = click_action.subs;
+        if (subs){
+            for (var s in subs){
+                if (substitute_text_dictionary[s] != subs[s]){
+                    return true;
+                }
+            }
+        }
+        
+        var flags_from_word = click_action.flags;
+        var not_flags_from_word = click_action.not_flags;
+        
+        if(flags_from_word){
+            if (flags_from_word.constructor !== Array){
+                flags_from_word = [flags_from_word];
+            }
+            for (var f in flags_from_word){
+                var flag = flags_from_word[f];
+                if (typeof flag == 'string'){
+                    var flag_name = flag;
+                    if (!flags[flag_name]){
+                        return true;
+                    }
+                }
+                else{
+                    return true;
+                }
+            }
+        }
+        
+        if(not_flags_from_word){
+            if (not_flags_from_word.constructor !== Array){
+                not_flags_from_word = [not_flags_from_word];
+            }
+            for (var f in not_flags_from_word){
+                var flag = not_flags_from_word[f];
+                if (typeof flag == 'string'){
+                    var flag_name = flag;
+                    if (flags[flag_name]){
+                        return true;
+                    }
+                }
+                else{
+                    return true;
+                }
+            }
+        }
+    return false;
+    }
+    
+    var conditions_met = function(condition, flags, text_flags){
         var condition_flags = condition.flags;
         if (condition_flags){
+            if (condition_flags.constructor !== Array){
+            condition_flags = [condition_flags];
+            }
             for (var f in condition_flags){
-                if (!flags[condition_flags[f]]){
+                var flag = condition_flags[f];
+                var value = 0;
+                var flag_name;
+                if (typeof flag == 'string'){
+                    flag_name = flag;
+                    value = 1;
+                }
+                else{
+                    for (flag_name in flag){
+                        value = flag[flag_name]
+                    }
+                }
+                if ((!flags[flag_name] || flags[flag_name]<value) && (!text_flags[flag_name] || text_flags[flag_name]<value)){
                     return false;
                 }
             }
         }
         var condition_not_flags = condition.not_flags;
         if (condition_not_flags){
+            if (condition_not_flags.constructor !== Array){
+                condition_not_flags = [condition_not_flags];
+            }
             for (var f in condition_not_flags){
-                if (flags[condition_not_flags[f]]){
+                var flag = condition_not_flags[f];
+                var value = 0;
+                var flag_name;
+                if (typeof flag == 'string'){
+                    flag_name = flag;
+                    value = 1;
+                }
+                else{
+                    for (flag_name in flag){
+                        value = flag[flag_name]
+                    }
+                }
+                if ((flags[flag_name] && flags[flag_name]>=value) || (text_flags[flag_name] && text_flags[flag_name]>=value)){
                     return false;
                 }
             }
@@ -302,6 +441,14 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         return function(){
             for (var f in function_array){
                 function_array[f]();
+            }
+        }
+    }
+    
+    var delete_unused_text_flags = function(text_flags, new_substituted_text){
+        for (var flag in text_flags){
+            if (! new_substituted_text.includes(flag)){
+                delete text_flags[flag];
             }
         }
     }
@@ -340,7 +487,6 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
                 e.preventDefault();
                 downloadInnerHtml("story.yaml", html_story_yaml, "yaml");
-                alert('captured');
             }
         }, false);
     }
@@ -359,12 +505,22 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     var generate_story = function(){
         new_substituted_text={};
-        var text = substitute_text(start_text, substitute_text_dictionary, story, previous_substituted_text, new_substituted_text);
+        var present_text_keys = [];
+        var text = substitute_text(start_text, substitute_text_dictionary, story, previous_substituted_text, new_substituted_text, undefined, flags, text_flags, present_text_keys);
         previous_substituted_text=new_substituted_text;
-        copy_dict(new_substituted_text, previous_substituted_text);
-        proccess_words(html_story, text, story, substitute_text_dictionary, flags);
+        delete_unused_text_flags(text_flags, present_text_keys);
+        proccess_words(html_story, text, story, substitute_text_dictionary, flags, text_flags);
         var body = document.getElementById("text-background");
         apply_styles_to_el(t_styles,p_styles,body);
+        
+        var subs = document.getElementById("subs");
+        subs.innerHTML = "";
+        for ( var p in substitute_text_dictionary){
+            if (present_text_keys.includes(substitute_text_dictionary[p])){
+                subs.innerHTML += "[" + p + " "+ substitute_text_dictionary[p] + "] "
+            }
+        }
+
         
     }   
     

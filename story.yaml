@@ -17,113 +17,164 @@ begin:
     text: $start$
 
 rooftop-start:
-    text: You are on a [rooftop-rft-1]. $rooftop_state$
+    - cond: 
+        flags: f-beautiful-sky
+      text: You are on a [rooftop-rft-1], under the moonlight. $rooftop_state$
+    - cond: 
+        flags: f-dark-sky
+      text: You are on a dark [rooftop-rft-1]. $rooftop_state$
+    - text: You are on a [rooftop-rft-1]. $rooftop_state$
     
 rooftop-any:
-    text: It's a [rooftop-rft-2] like [any_other-rft]. $rooftop_characteristics$
+    - cond:
+       flags: 
+         f-any-other-rooftop
+      text: It's just a [rooftop-rft-3], with some [vents-rft], a [ledge-rft] and some pipes lying around. $rooftop_characteristics$
+    - text: You are on a [rooftop-rft-3] like [any_other-rft]. $rooftop_characteristics$
 
 rooftop-any-other:
     text: You've been to too many rooftops to care about them anymore.
     
 rooftop-dark-state:
-    text: It's [dark-rft].
+    text: It's [night-rft].
     
 rooftop-shadows-state:
     text: Shadows are dancing in the distance.
-    text-flags: 
-        - rooftop-shadows: 1
 
 rooftop-night:
-    text: It's [night-rft] on the [rooftop-rft-2]. $sky_state$
+    text: It's [night-rft-sky] on the [rooftop-rft-2]. $sky_state$
     
 rooftop-dark-night:
     text: The [sky-rft-sky] is [dark-rft-sky].
     
 rooftop-beautiful-night:
-    text: You see the [beautiful-rft-sky] night [sky-rft-sky].
+    text: You see the [beautiful-rft-sky] night [sky-rft-sky]$beautiful_sky_state$
+
+rooftop-moon-shining:
+    text: ", where the [moon-rft-sky] is shining brightly. $moon-shining$"
+
+rooftop-moon-forest:
+    text: "<br> The bright moonlight is reflected by the crowns of some [trees-rft-sky] by the horizon."
+.:
+  text: .
 
 ################################
 # Words describing the rooftop
 rooftop-rft-1:
     word: rooftop
     click:
-        - condition: 
+        - cond: 
             flags:
-                - investigate-rooftop
-          substitutions:
+                - f-investigate-rooftop
+          subs:
             start: rooftop-any
           flags: 
-            - investigate-rooftop: 1
-        - condition: 
+            - f-investigate-rooftop: 1
+        - cond: 
           flags: 
-            - investigate-rooftop: 1
-          substitutions:
+            - f-investigate-rooftop: 1
+          subs:
             rooftop_state: rooftop-dark-state
               
 rooftop-rft-2:
     word: rooftop
     click:
-        - condition:
+        - cond:
           flags: 
-          substitutions:
+          subs:
             start: rooftop-start
-          remove-flags: 
+          rm-flags: 
 
-dark-rft:
-    word: dark
+rooftop-rft-3:
+    word: rooftop
     click:
-          - condition: 
+        - cond: 
+            flags: tasa
+          subs:
+            start: rooftop-start
+          rm-flags: 
+        - cond: 
+          subs:
+            start: rooftop-start
+          rm-flags: 
+
+night-rft:
+    word: night
+    click:
+          - cond: 
               flags:
-                - investigate-rooftop
-                - dark-rooftop
-                - dark-sky
-            substitutions:
+                - f-investigate-rooftop
+                - f-dark-sky
+            subs:
               rooftop_state: rooftop-shadows-state
-          - substitutions:
+          - subs:
                 start: rooftop-night
             flags:  
-                - dark-rooftop
 
 any_other-rft:
     word: any other
     click:
-        - condition:
+        - cond:
             not_flags: 
-                - any-other-rooftop
-          substitutions:
+                - f-any-other-rooftop
+          subs:
             rooftop_characteristics: rooftop-any-other
           flags: 
-            - any-other-rooftop
+            - f-any-other-rooftop
 
 ############
 # Sky at the rooftop
-night-rft:
+night-rft-sky:
     word: night
     click:
-        - substitutions:
+        - subs:
             sky_state: rooftop-dark-night
 
 
 sky-rft-sky:
     word: sky
     click:
-        - substitutions:
+        - subs:
             sky_state: rooftop-beautiful-night
+            beautiful_sky_state: .
+          cond:
+            not_flags: rooftop-beautiful-night
     
 dark-rft-sky:
     word: dark
     click:
-        - substitutions:
+        - subs:
           flags: 
-            - dark-sky
+            - f-dark-sky
           body_class: 
             - flash-dark
-          remove_flags:
-            - beautiful-sky
+          rm_flags:
+            - f-beautiful-sky
 beautiful-rft-sky:
     word: beautiful
     click:
-        - substitutions: 
-          remove_flags:
-            - dark-sky
-          flags: beautiful-sky
+        - subs: 
+            beautiful_sky_state: rooftop-moon-shining
+          rm_flags:
+            - f-dark-sky
+          flags: f-beautiful-sky
+
+moon-rft-sky:
+    word: moon
+    click:
+        - subs: 
+             moon-shining: rooftop-moon-forest
+          rm_flags:
+          flags: 
+
+trees-rft-sky:
+    word: trees
+    click:
+        - subs:              
+          rm_flags:
+          flags: 
+vents-rft:
+  word: vents
+
+ledge-rft:
+  word: ledge
