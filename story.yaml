@@ -14,7 +14,7 @@
 ###############
 
 begin:
-    text: $start$
+    text: $start$ $end$
 
 rooftop-start:
     - cond: 
@@ -31,6 +31,12 @@ rooftop-any:
          f-any-other-rooftop
       text: It's just a [rooftop-rft-3], with some [vents-rft], a [ledge-rft] and some pipes lying around. $rooftop_characteristics$
     - text: You are on a [rooftop-rft-3] like [any_other-rft]. $rooftop_characteristics$
+
+rooftop-vents: 
+  text: You walk towards the [vents-rft-2] and notice that they are open$rooftop_vents$ 
+
+rooftop-ledge:
+  text: You walk towards the ledge and look down. <br> It is a long [fall-rft-ledge].
 
 rooftop-any-other:
     text: You've been to too many rooftops to care about them anymore.
@@ -175,6 +181,26 @@ trees-rft-sky:
           flags: 
 vents-rft:
   word: vents
+  click:
+    - subs:
+        rooftop_characteristics: rooftop-vents
+        rooftop_vents: .
+
+vents-rft-2:
+  word: vents
+  click:
+    - subs:
+        rooftop_characteristics: rooftop-vents
 
 ledge-rft:
   word: ledge
+  click:
+    - subs:
+        rooftop_characteristics: rooftop-ledge
+
+fall-rft-ledge:
+  word: fall
+  click:
+    - m: True
+      body_class: 
+      - flash-red

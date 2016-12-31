@@ -19,7 +19,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     var text_flags = {}; // Flags set by text Temporary
     
     var permanent_styles_list = []; //Defines which styles for the body are permanent ones
-    var temporary_styles_list = ["flash-dark"]; //Defines which styles for the body are temporary ones, such as dark flashes.
+    var temporary_styles_list = ["flash-dark", "flash-red"]; //Defines which styles for the body are temporary ones, such as dark flashes.
     
     var p_styles = []; // Permanent styles applied to the body
     var t_styles = []; // Temporary styles applied to the body

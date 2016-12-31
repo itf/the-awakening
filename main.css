@@ -150,6 +150,17 @@ pre {
   to { background: ##fff }
 }
 
+.flash-red {
+    animation: 
+       flashRed 1.0s steps(40, end);
+    background: #000;
+}
+
+@keyframes flashRed {
+  from { background: #8A0707 }
+  to { background: #000 }
+}
+
 #text-background{
     /*
   height:100%;
