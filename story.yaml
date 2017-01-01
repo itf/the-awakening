@@ -50,7 +50,11 @@ rooftop-falling-wind:
   text: <br> <br> You hear the wind rushing through you ears.
 
 rooftop-any-other:
-    text: You've been to too many rooftops to care about them anymore.
+    - text: This rooftop seems darker than usual, but you've been to too many dark rooftops to care about this one.
+      cond:
+        flags:
+          f-dark-sky
+    - text: You've been to too many rooftops to care about them anymore.
     
 rooftop-dark-state:
     text: It's [night-rft].
@@ -59,7 +63,10 @@ rooftop-shadows-state:
     text: Shadows are dancing in the distance.
 
 rooftop-night:
-    text: It's [night-rft-sky] on the [rooftop-rft-2]. $sky_state$
+    - text: It's just another [night-rft-sky] on the [rooftop-rft-2]. $sky_state$
+      cond:
+        flags: f-dark-sky
+    - text: It's [night-rft-sky] on the [rooftop-rft-2]. $sky_state$
     
 rooftop-dark-night:
     text: The [sky-rft-sky] is [dark-rft-sky].
