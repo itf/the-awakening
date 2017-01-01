@@ -35,8 +35,19 @@ rooftop-any:
 rooftop-vents: 
   text: You walk towards the [vents-rft-2] and notice that they are open$rooftop_vents$ 
 
+rooftop-vents-inside:
+  text: ", so you decide to enter them. <br>Inside the [vents-rft-3], it is too dark to see anything$rooftop_vents_2$ "
+
+rooftop-vents-inside-2:
+  text: ", but you are hardcore and decide to continue. <br> <br> Even without your headlamp you keep crawling relentlessly through the ventilation pipes.
+<br> <br>
+You didn't notice that ahead on your path was a vertical pipe connected to the basement, and tried crawling over it."
+
 rooftop-ledge:
-  text: You walk towards the ledge and look down. <br> It is a long [fall-rft-ledge].
+  text: You walk towards the ledge and look down. <br> It is a long [fall-rft-ledge]. $rooftop_falling$
+
+rooftop-falling-wind:
+  text: <br> <br> You hear the wind rushing through you ears.
 
 rooftop-any-other:
     text: You've been to too many rooftops to care about them anymore.
@@ -193,7 +204,18 @@ vents-rft-2:
   word: vents
   click:
     - subs:
-        rooftop_characteristics: rooftop-vents
+        rooftop_vents: rooftop-vents-inside
+        rooftop_vents_2: .
+
+vents-rft-3:
+  word: vents
+  click:
+    - subs:
+        rooftop_vents_2: rooftop-vents-inside-2
+        end: END
+      body_class: 
+       - flash-red
+
 
 ledge-rft:
   word: ledge
@@ -208,6 +230,7 @@ fall-rft-ledge:
       body_class: 
       - flash-red
       subs:
+        rooftop_falling: rooftop-falling-wind
         end: END
       
 undo:

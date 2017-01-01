@@ -248,13 +248,15 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     // Actions
     
     var undo_story = function(){
-        var old_state = previous_states.shift();
-        old_state = previous_states.shift();
-        text_flags = old_state[0];
-        flags = old_state[1];
-        substitute_text_dictionary = old_state[2];
-        previous_substituted_text = old_state[3];
-        new_substituted_text = old_state[4];
+        if (previous_states.length>1){
+            var old_state = previous_states.shift();
+            old_state = previous_states.shift();
+            text_flags = old_state[0];
+            flags = old_state[1];
+            substitute_text_dictionary = old_state[2];
+            previous_substituted_text = old_state[3];
+            new_substituted_text = old_state[4];
+        }
     }
 
     var add_to_substitute_dict =  function(substitute_dict_object, text_dict){
