@@ -60,7 +60,8 @@ img {
 }
 .clickable-word {
     cursor:pointer;
-    color:brown
+    color:brown;
+    border-bottom: 1px ridge ;
 }
 
 
@@ -161,11 +162,6 @@ pre {
   to { background: #000 }
 }
 
-#text-background{
-    /*
-  height:100%;
-  width:100%;
-  max-width:inherit;
-  max-height:inherit;
-  position: absolute;*/
+.hidden{
+    display: none;
 }

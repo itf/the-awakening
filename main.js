@@ -256,6 +256,8 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             substitute_text_dictionary = old_state[2];
             previous_substituted_text = old_state[3];
             new_substituted_text = old_state[4];
+            p_styles = old_state[5];
+            t_styles = old_state[6];
         }
     }
 
@@ -477,8 +479,8 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         }
     }
 
-    var push_story_state = function(previous_states, text_flags,flags,substitute_text_dictionary,previous_substituted_text,new_substituted_text){
-        previous_states.unshift([clone_object(text_flags),clone_object(flags),clone_object(substitute_text_dictionary),clone_object(previous_substituted_text),clone_object(new_substituted_text)]);
+    var push_story_state = function(previous_states, text_flags,flags,substitute_text_dictionary,previous_substituted_text,new_substituted_text, p_styles, t_styles){
+        previous_states.unshift([clone_object(text_flags),clone_object(flags),clone_object(substitute_text_dictionary),clone_object(previous_substituted_text),clone_object(new_substituted_text), clone_object(p_styles), clone_object(t_styles)]);
         if (previous_states.length>10){
             previous_states.length=10;
         }
@@ -507,9 +509,31 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         generate_story();
     }
     
+    var restart_story = function(){
+        substitute_text_dictionary = {"start": "rooftop-start"};
+        previous_substituted_text = [];
+        new_substituted_text = [];
+        flags = {}; //Flags set by words. Permanent
+        text_flags = {}; // Flags set by text Temporary
+        p_styles = []; // Permanent styles applied to the body
+        t_styles = []; // Temporary styles applied to the body
+        previous_states=[]; // For undo.
+        generate_story();   
+    }
+    
+    var toggle_editing = function(){
+        var editing = document.getElementById("editing")
+        editing.classList.toggle('hidden');
+    }
+    
+        
     var add_functions_to_buttons = function(){
         var reload_button = document.getElementById("reload_yaml");
         reload_button.addEventListener("click", reload_yaml_from_html, false); 
+        var restart_button = document.getElementById("restart");
+        restart_button.addEventListener("click", restart_story, false); 
+        var toggle_button = document.getElementById("toggle_editing");
+        toggle_button.addEventListener("click", toggle_editing, false); 
     }
     
     var add_ctrl_s = function(){
@@ -523,13 +547,18 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     var editing_text_helper = function(present_text_keys){
         var subs = document.getElementById("subs");
+        var subs2 = document.getElementById("subs2");
+
         subs.innerHTML = "";
+        subs2.innerHTML = "";
+
         for ( var p in substitute_text_dictionary){
             if (present_text_keys.includes(substitute_text_dictionary[p])){
-                subs.innerHTML += "[" + p + " "+ substitute_text_dictionary[p] + "] "
+                subs.innerHTML += "[" + p + " "+ substitute_text_dictionary[p] + "] ";
+                subs2.innerHTML += " "+new_substituted_text[p];
+
             }
         }
-
     }
     
     var downloadInnerHtml = function(filename, el, mimeType) {
@@ -560,6 +589,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     //Generate story
     
     var generate_story = function(){
+        push_story_state(previous_states, text_flags,flags,substitute_text_dictionary,previous_substituted_text,new_substituted_text, p_styles, t_styles);
         new_substituted_text={};
         var present_text_keys = [];
         var text = substitute_text(start_text, substitute_text_dictionary, story, previous_substituted_text, new_substituted_text, undefined, flags, text_flags, present_text_keys);
@@ -569,7 +599,6 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         var body = document.getElementById("text-background");
         apply_styles_to_el(t_styles,p_styles,body);
         
-        push_story_state(previous_states, text_flags,flags,substitute_text_dictionary,previous_substituted_text,new_substituted_text);
         editing_text_helper(present_text_keys);
         
     }   

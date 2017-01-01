@@ -1,4 +1,6 @@
 #############
+# FOR DEVELOPERS ONLY
+# 
 # There are 2 types of structures: TEXT and WORDS
 # WORDS are clickable.
 # TEXT contain words.
@@ -22,14 +24,23 @@ rooftop-start:
       text: You are on a [rooftop-rft-1], under the moonlight. $rooftop_state$
     - cond: 
         flags: f-dark-sky
-      text: You are on a dark [rooftop-rft-1]. $rooftop_state$
+      text: You are on a [dark-rft] [rooftop-rft-1]. $rooftop_state$
     - text: You are on a [rooftop-rft-1]. $rooftop_state$
     
 rooftop-any:
     - cond:
        flags: 
+         - f-any-other-rooftop
+         - f-beautiful-sky
+      text: It's a shimmering [rooftop-rft-3], with some [vents-rft], a [ledge-rft] and some pipes lying around. $rooftop_characteristics$
+    - cond:
+       flags: 
          f-any-other-rooftop
       text: It's just a [rooftop-rft-3], with some [vents-rft], a [ledge-rft] and some pipes lying around. $rooftop_characteristics$
+    - cond:
+        flags:
+          f-beautiful-sky
+      text: You are on a shimmering [rooftop-rft-3] like [any_other-rft]. $rooftop_characteristics$
     - text: You are on a [rooftop-rft-3] like [any_other-rft]. $rooftop_characteristics$
 
 rooftop-vents: 
@@ -128,15 +139,21 @@ rooftop-rft-3:
 night-rft:
     word: night
     click:
+          - subs:
+                start: rooftop-night
+            flags:  
+
+dark-rft: 
+    word: dark
+    click:
           - cond: 
               flags:
                 - f-investigate-rooftop
                 - f-dark-sky
             subs:
               rooftop_state: rooftop-shadows-state
-          - subs:
-                start: rooftop-night
-            flags:  
+            body_class:
+              flash-dark
 
 any_other-rft:
     word: any other
