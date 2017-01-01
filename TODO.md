@@ -62,13 +62,15 @@ TODO
 
 [x] Make sure all text continues in line if needed (css fix inline-block)
 
-[x] Display the substitution words under the text.
-
-[] Button to add word
+[x] Display the substitution words under the text
 
 [x] Make sure useless buttons are not clickable anymore
 
+[x] Implement Undo and undo word 
+
 [] Create at least 2 min of gameplay.
+
+[] Button to add word
 
 [] Timed events
 

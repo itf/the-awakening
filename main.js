@@ -24,6 +24,8 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     var p_styles = []; // Permanent styles applied to the body
     var t_styles = []; // Temporary styles applied to the body
     
+    var previous_states=[]; // For undo.
+    
     //For debugging: 
     var html_story_yaml = document.getElementById("story_yaml");
     
@@ -115,11 +117,14 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         var function_array = [];
         if (word_dict_object.click){
             var click_array = word_dict_object.click;
+            if (click_array.constructor !== Array){
+                click_array = [click_array];
+            }
             for (var s in  click_array){
                 var click_action = click_array[s];
                 if (!click_action.cond || conditions_met(click_action.cond, flags, text_flags)){
                     
-                    if (!is_useful_word(click_action, text_dict, flags)){
+                    if (!is_useful_word(click_action, text_dict, flags, text_flags)){
                         return null;
                     }
                     
@@ -132,6 +137,10 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                     }
                     if (click_action.body_class){
                         function_array.push(()=>add_styles_to_body(click_action.body_class));
+                    }
+                    
+                    if (click_action.undo){
+                        function_array.push(()=>undo_story( ));
                     }
                     
                     break;
@@ -237,6 +246,16 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
 
 
     // Actions
+    
+    var undo_story = function(){
+        var old_state = previous_states.shift();
+        old_state = previous_states.shift();
+        text_flags = old_state[0];
+        flags = old_state[1];
+        substitute_text_dictionary = old_state[2];
+        previous_substituted_text = old_state[3];
+        new_substituted_text = old_state[4];
+    }
 
     var add_to_substitute_dict =  function(substitute_dict_object, text_dict){
         for (var s in substitute_dict_object){
@@ -333,7 +352,10 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         }
     };
     
-    var is_useful_word = function(click_action, substitute_text_dictionary, flags){
+    var is_useful_word = function(click_action, substitute_text_dictionary, flags, text_flags){
+        if (text_flags["END"] && !click_action.end){
+            return false;
+        }
         if (click_action.m){
             return true;
         }
@@ -453,6 +475,12 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         }
     }
 
+    var push_story_state = function(previous_states, text_flags,flags,substitute_text_dictionary,previous_substituted_text,new_substituted_text){
+        previous_states.unshift([clone_object(text_flags),clone_object(flags),clone_object(substitute_text_dictionary),clone_object(previous_substituted_text),clone_object(new_substituted_text)]);
+        if (previous_states.length>10){
+            previous_states.length=10;
+        }
+    }
     
     //Functions to help with editing
     
@@ -491,6 +519,17 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         }, false);
     }
     
+    var editing_text_helper = function(present_text_keys){
+        var subs = document.getElementById("subs");
+        subs.innerHTML = "";
+        for ( var p in substitute_text_dictionary){
+            if (present_text_keys.includes(substitute_text_dictionary[p])){
+                subs.innerHTML += "[" + p + " "+ substitute_text_dictionary[p] + "] "
+            }
+        }
+
+    }
+    
     var downloadInnerHtml = function(filename, el, mimeType) {
         var elHtml = el.value;
         var link = document.createElement('a');
@@ -499,6 +538,21 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         link.setAttribute('download', filename);
         link.setAttribute('href', 'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(elHtml));
         link.click(); 
+    }
+    
+    //Extra helpers
+    
+    function clone_object(obj) {
+        if (obj === null || typeof obj !== 'object') {
+            return obj;
+        }
+
+        var temp = obj.constructor(); // give temp the original obj's constructor
+        for (var key in obj) {
+            temp[key] = clone_object(obj[key]);
+        }
+
+        return temp;
     }
     
     //Generate story
@@ -513,14 +567,8 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         var body = document.getElementById("text-background");
         apply_styles_to_el(t_styles,p_styles,body);
         
-        var subs = document.getElementById("subs");
-        subs.innerHTML = "";
-        for ( var p in substitute_text_dictionary){
-            if (present_text_keys.includes(substitute_text_dictionary[p])){
-                subs.innerHTML += "[" + p + " "+ substitute_text_dictionary[p] + "] "
-            }
-        }
-
+        push_story_state(previous_states, text_flags,flags,substitute_text_dictionary,previous_substituted_text,new_substituted_text);
+        editing_text_helper(present_text_keys);
         
     }   
     
