@@ -71,7 +71,7 @@ rooftop-dark-state:
     text: It's [night-rft].
     
 rooftop-shadows-state:
-    text: Shadows are dancing in the distance.
+    text: "[shadows-rft] are dancing in the distance."
 
 rooftop-night:
     - text: It's just another [night-rft-sky] on the [rooftop-rft-2]. $sky_state$
@@ -89,7 +89,24 @@ rooftop-moon-shining:
     text: ", where the [moon-rft-sky] is shining brightly. $moon-shining$"
 
 rooftop-moon-forest:
-    text: "<br> The bright moonlight is reflected by the crowns of some [trees-rft-sky] by the horizon."
+    text: "<br> The bright moonlight is reflected by the crowns of some [trees-rft-sky] by the horizon$moon-tree$"
+
+rooftop-moon-forest-2:
+   text: ". <br> <br> Your eyes are drawn to the [forest-rft] ahead. $moon-forest$"
+
+rooftop-moon-forest-3:
+  text: <br> You can almost feel the smell from the fallen [leaves-rft]$moon-leaves$
+
+rooftop-moon-forest-bark-smell:
+  text: ", as well as the smell from the tree barks. $tree-barks$"
+
+rooftop-forest-transition:
+  text: <br> The [forest-rft-frt]. $forest-forest$
+
+
+
+forest-start:
+  text: <br><br>You find yourself in a forest.
 .:
   text: .
   
@@ -208,13 +225,15 @@ moon-rft-sky:
     click:
         - subs: 
              moon-shining: rooftop-moon-forest
+             moon-tree: .
           rm_flags:
           flags: 
 
 trees-rft-sky:
     word: trees
     click:
-        - subs:              
+        - subs: 
+            moon-tree: rooftop-moon-forest-2             
           rm_flags:
           flags: 
 vents-rft:
@@ -257,6 +276,35 @@ fall-rft-ledge:
         rooftop_falling: rooftop-falling-wind
         end: END
       
+shadows-rft:
+  word: Shadows
+
+forest-rft:
+  word: forest
+  click:
+    - cond:
+        flags:
+          f-leaves-rft
+      subs:
+        tree-barks: rooftop-forest-transition
+    - subs:
+        moon-forest: rooftop-moon-forest-3
+        moon-leaves: .
+
+leaves-rft:
+  word: leaves
+  click:
+    flags:
+      f-leaves-rft
+    subs: 
+      moon-leaves: rooftop-moon-forest-bark-smell
+
+forest-rft-frt:
+  word: forest
+  click:
+    subs:
+      forest-forest: forest-start
+
 undo:
   word: Undo
   click:

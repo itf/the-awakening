@@ -124,7 +124,7 @@ img {
   from { -webkit-clip-path: polygon(0% 0%, 0% 100vh, 0% 100vh, 0% 0%);
     clip-path:  polygon(0% 0%, 0% 100vh, 0% 100vh, 0% 0%); }
   to { -webkit-clip-path: polygon(0% 0%, 0% 100vh, 100% 100vh, 100% 0%);
-    clip-path:  polygon(0% 0%, 0% 100vh, 100% 100vh, 100% 0%);;}
+    clip-path:  polygon(0% 0%, 0% 100vh, 100% 100vh, 100% 0%);}
 }
 
 /* The deleting effect */
