@@ -49,8 +49,19 @@ rooftop-vents:
 rooftop-vents-inside:
   text: ", so you decide to enter them. <br>Inside the [vents-rft-3], it is too dark to see anything$rooftop_vents_2$ "
 
+rooftop-vents-stop-entering:
+  text: ", so you decide not to enter. You tremble at the view of this dark entrance under this somber sky. <br><br> Maybe if you were more used to the darkness you would adventure inside the vents."
+
 rooftop-vents-inside-2:
-  text: ", but you are hardcore and decide to continue. <br> <br> Even without your headlamp you keep crawling relentlessly through the ventilation pipes.
+  - text: ", but you are hardcore and decide to continue. <br> <br> Even without your headlamp you keep crawling relentlessly through the ventilation pipes. 
+<br> <br>
+The moonlight, entering through the vent allowed you to avoid falling to the basement through one of the pipes near the entrance.
+<br><br>
+However you didn't notice that ahead on your path was a second vertical pipe connected to the basement, and tried crawling over it."
+    cond:
+      flags:
+          f-beautiful-sky
+  - text: ", but you are hardcore and decide to continue. <br> <br> Even without your headlamp you keep crawling relentlessly through the ventilation pipes.
 <br> <br>
 You didn't notice that ahead on your path was a vertical pipe connected to the basement, and tried crawling over it."
 
@@ -218,7 +229,7 @@ beautiful-rft-sky:
             beautiful_sky_state: rooftop-moon-shining
           rm_flags:
             - f-dark-sky
-          flags: f-beautiful-sky
+          flags: 
 
 moon-rft-sky:
     word: moon
@@ -227,7 +238,7 @@ moon-rft-sky:
              moon-shining: rooftop-moon-forest
              moon-tree: .
           rm_flags:
-          flags: 
+          flags: f-beautiful-sky
 
 trees-rft-sky:
     word: trees
@@ -253,6 +264,13 @@ vents-rft-2:
 vents-rft-3:
   word: vents
   click:
+    - cond:
+        flags:
+          f-dark-sky
+      subs:
+        rooftop_vents_2: rooftop-vents-stop-entering
+      body_class: 
+       - flash-dark
     - subs:
         rooftop_vents_2: rooftop-vents-inside-2
         end: END
