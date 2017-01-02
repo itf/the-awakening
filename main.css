@@ -82,7 +82,10 @@ img {
   margin: 0 auto; /* Gives that scrolling effect as the typing happens */
   vertical-align: bottom;
   animation: 
-    typing 0.7s steps(40, end)
+    typing 0.7s steps(40, end);
+  background:black;
+  -webkit-clip-path: polygon(0% 0%, 0% 100vh, 100% 100vh, 100% 0%)
+
 }
 
 .substituted-text {
@@ -119,10 +122,10 @@ img {
 
 /* The typing effect */
 @keyframes typing {
-  from { -webkit-clip-path: polygon(0% 0%, 0% 100%, 0% 100%, 0% 0%);;
-    clip-path:  inset(0% 100% 0% 0%); }
-  to { -webkit-clip-path: polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%);;
-    clip-path:  inset(0% 0% 0% 0%);}
+  from { -webkit-clip-path: polygon(0% 0%, 0% 100vh, 0% 100vh, 0% 0%);
+    clip-path:  polygon(0% 0%, 0% 100vh, 0% 100vh, 0% 0%); }
+  to { -webkit-clip-path: polygon(0% 0%, 0% 100vh, 100% 100vh, 100% 0%);
+    clip-path:  polygon(0% 0%, 0% 100vh, 100% 100vh, 100% 0%);;}
 }
 
 /* The deleting effect */
