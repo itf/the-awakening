@@ -83,7 +83,6 @@ img {
   vertical-align: bottom;
   animation: 
     typing 0.7s steps(40, end);
-  background:black;
   -webkit-clip-path: polygon(0% 0%, 0% 100vh, 100% 100vh, 100% 0%)
 
 }
