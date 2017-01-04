@@ -117,35 +117,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         var function_array = [];
         if (word_dict_object.click){
             var click_array = word_dict_object.click;
-            if (click_array.constructor !== Array){
-                click_array = [click_array];
-            }
-            for (var s in  click_array){
-                var click_action = click_array[s];
-                if (!click_action.cond || conditions_met(click_action.cond, flags, text_flags)){
-                    
-                    if (!is_useful_word(click_action, text_dict, flags, text_flags)){
-                        return null;
-                    }
-                    
-                    function_array.push(()=>add_to_substitute_dict(click_action.subs, text_dict));
-                    if (click_action.flags){
-                        function_array.push(()=>add_flags(click_action.flags, flags));
-                    }
-                    if (click_action.rm_flags){
-                        function_array.push(()=>remove_flags(click_action.rm_flags, flags));
-                    }
-                    if (click_action.body_class){
-                        function_array.push(()=>add_styles_to_body(click_action.body_class));
-                    }
-                    
-                    if (click_action.undo){
-                        function_array.push(()=>undo_story( ));
-                    }
-                    
-                    break;
-                }
-            }
+            function_array = get_action_function_array(click_array, text_dict, flags, text_flags);
         }
         if (function_array.length == 0){
             return null;
@@ -154,6 +126,39 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             function_array.push(generate_story);
             return function_array_to_function(function_array);
         }
+    }
+    
+    var get_action_function_array = function(actions_conds_array, text_dict, flags, text_flags){
+        var function_array = [];
+        if (actions_conds_array.constructor !== Array){
+            actions_conds_array = [actions_conds_array];
+        }
+        for (var s in  actions_conds_array){
+            var click_action = actions_conds_array[s];
+            if (!click_action.cond || conditions_met(click_action.cond, flags, text_flags)){
+                if (!is_useful_word(click_action, text_dict, flags, text_flags)){
+                    return [];
+                }
+
+                function_array.push(()=>add_to_substitute_dict(click_action.subs, text_dict));
+                if (click_action.flags){
+                    function_array.push(()=>add_flags(click_action.flags, flags));
+                }
+                if (click_action.rm_flags){
+                    function_array.push(()=>remove_flags(click_action.rm_flags, flags));
+                }
+                if (click_action.body_class){
+                    function_array.push(()=>add_styles_to_body(click_action.body_class));
+                }
+
+                if (click_action.undo){
+                    function_array.push(()=>undo_story( ));
+                }
+
+                break;
+            }
+        }
+        return function_array;
     }
 
     var dummy_word = document.createElement('span'); //To not create multiple word elements
@@ -196,6 +201,11 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 word.addEventListener("click", word_click_function, false); 
             }
         }
+    }
+    
+    var add_time_events_to_words = function(word_keys, dictionary, text_dict, flags, text_flags){
+    
+    
     }
 
     var remove_markers = function(text){
@@ -573,7 +583,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     //Extra helpers
     
-    function clone_object(obj) {
+    var clone_object = function(obj) {
         if (obj === null || typeof obj !== 'object') {
             return obj;
         }
@@ -585,6 +595,34 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
 
         return temp;
     }
+    
+    //Timed events
+    var timed_run = function (){
+        //do stuff
+        setTimeout(timed_run, 100);
+    }
+    
+    var timed_event = function(word, max_time, action){
+        this.word = word;
+        this.max_time = max_time;
+        this.action = action;
+        this.time = 0;
+        var update_style = function(){
+            var word_html = document.getElementById(word);
+            if (word_html !== null){
+                var percentage = this.time / this.max_time;
+                word_html.style.background = " -webkit-linear-gradient( left, #000 " + percentage +" %, #fff "+ (width+10)+ "%)";
+            }
+        }
+        var update_time = function(added_time){
+            this.time += added_time;
+            update_style();
+            
+            
+        }
+        
+    }
+    
     
     //Generate story
     

@@ -13,6 +13,10 @@
 # TEXT-KEYWORDS:
 # You have access to the keywords of the texts that are being displayed, which can be used to modify the behavior of the WORDS.
 # 
+# OBS:
+# The code make use of the id of the words, in such a way that if there is more than one of the same word on the screen, only one of them will be accessed.
+#
+# Timed Events (BETA and in construction):
 ###############
 
 begin:
@@ -296,6 +300,16 @@ fall-rft-ledge:
       
 shadows-rft:
   word: Shadows
+  time:
+    - t: 10
+      b: 
+        flags:
+            f-shadow-attacking
+      e:
+        subs:
+            end: END
+        
+        
 
 forest-rft:
   word: forest
