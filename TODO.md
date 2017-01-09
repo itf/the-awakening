@@ -68,7 +68,16 @@ TODO
 
 [x] Implement Undo and undo word 
 
+[] Implement a timed event (in this case for the shadows, where you can hide in the vents or destroy them under the moonlight)
+    
+        A timed event is specified as following, it is a B and a E (BEGIN and END), a max time and a name.
+        Other words can destroy the name (stop the timed event)
+        The begin defines what flags, etc will be set. It uses the same logic as a click. It also defines the conditions for the timed event to start
+        Each timed event has only a single begin, but it might have many ENDs. The ends will happen depending on the conditional, once more using the same logic as the click
+
 [] Create at least 2 min of gameplay.
+
+[] Fix up the fucking code. It is a mess.
 
 [] Button to add word
 

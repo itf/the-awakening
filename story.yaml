@@ -20,9 +20,12 @@
 ###############
 
 begin:
-    text: $start$ $end$
+    text: $start$ $end$ $end2$
 
 rooftop-start:
+    - cond: 
+        flag: rooftop-darkness
+      text: It is nice and dark on this [rooftop-rft-1]. $rooftop_state$
     - cond: 
         flags: f-beautiful-sky
       text: You are on a [rooftop-rft-1], under the moonlight. $rooftop_state$
@@ -33,7 +36,7 @@ rooftop-start:
     
 rooftop-any:
     - cond:
-       flags: 
+       flags: darkness-rft
          - f-any-other-rooftop
          - f-beautiful-sky
       text: It's a shimmering [rooftop-rft-3], with some [vents-rft], a [ledge-rft] and some pipes lying around. $rooftop_characteristics$
@@ -54,7 +57,18 @@ rooftop-vents-inside:
   text: ", so you decide to enter them. <br>Inside the [vents-rft-3], it is too dark to see anything$rooftop_vents_2$ "
 
 rooftop-vents-stop-entering:
-  text: ", so you decide not to enter. You tremble at the view of this dark entrance under this somber sky. <br><br> Maybe if you were more used to the darkness you would adventure inside the vents."
+  text: ", so you decide not to enter. You tremble at the view of this dark entrance under this somber sky. <br><br> Maybe if you were more used to the darkness you would venture inside the vents."
+  cond:
+    not_flags: 
+       shadows-rft
+
+rooftop-vents-escape-shadows:
+    text: ", but you decide to enter to escape the shadows. You tremble at the view of this dark entrance under this somber sky. <br><br> You hide just long enough to escape from the shadows that were following you."
+    rm_flags: shadows-rft
+    flags: f-escaped-shadows-rft
+    cond:
+      flags:
+        shadows-rft
 
 rooftop-vents-inside-2:
   - text: ", but you are hardcore and decide to continue. <br> <br> Even without your headlamp you keep crawling relentlessly through the ventilation pipes. 
@@ -87,6 +101,18 @@ rooftop-dark-state:
     
 rooftop-shadows-state:
     text: "[shadows-rft] are dancing in the distance."
+    cond:
+      not_flags:
+        - f-escaped-shadows-rft
+
+rooftop-dark-escaped-shadows:
+  text: You feel a bit at home in this [darkness-rft]$rooftop-darkness$ 
+  cond:
+    flags:
+      - f-escaped-shadows-rft
+
+rooftop-darkness-forest:
+  text: "; it reminds you of the forests you used to explore. $rooftop-darkness-forest$"
 
 rooftop-night:
     - text: It's just another [night-rft-sky] on the [rooftop-rft-2]. $sky_state$
@@ -127,6 +153,10 @@ forest-start:
   
 END:
     text: <br><br> ✴✴✴  ✴✴✴ <br> [undo]?
+
+END-SHADOW:
+   text: <br><br> The shadows caught you.
+  
 
 ################################
 # Words describing the rooftop
@@ -180,12 +210,26 @@ dark-rft:
     click:
           - cond: 
               flags:
+                - f-escaped-shadows-rft
+            subs:
+              rooftop_state: rooftop-dark-escaped-shadows
+              rooftop-darkness: .
+          - cond: 
+              flags:
                 - f-investigate-rooftop
                 - f-dark-sky
             subs:
               rooftop_state: rooftop-shadows-state
             body_class:
               flash-dark
+
+darkness-rft:
+  word: darkness
+  click:
+    - body_style: 
+        flash-dark
+      subs:
+        rooftop-darkness: rooftop-darkness-forest
 
 any_other-rft:
     word: any other
@@ -269,6 +313,10 @@ vents-rft-3:
   word: vents
   click:
     - cond:
+        flags: shadows-rft
+      subs:
+        rooftop_vents_2: rooftop-vents-escape-shadows
+    - cond:
         flags:
           f-dark-sky
       subs:
@@ -300,15 +348,19 @@ fall-rft-ledge:
       
 shadows-rft:
   word: Shadows
-  time:
-    - t: 10
-      b: 
-        flags:
-            f-shadow-attacking
+  auto:
+    - flags:
+        f-shadow-attacked
+      cond:
+        not_flags:
+            f-shadow-attacked
+      time: 20
       e:
-        subs:
-            end: END
-        
+        - subs:
+            end: END-SHADOW
+            end2: END
+          body_class: flash-red
+          
         
 
 forest-rft:
