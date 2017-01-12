@@ -24,7 +24,7 @@ begin:
 
 rooftop-start:
     - cond: 
-        flag: rooftop-darkness
+        flags: rooftop-darkness
       text: It is nice and dark on this [rooftop-rft-1]. $rooftop_state$
     - cond: 
         flags: f-beautiful-sky
@@ -36,7 +36,7 @@ rooftop-start:
     
 rooftop-any:
     - cond:
-       flags: darkness-rft
+       flags: 
          - f-any-other-rooftop
          - f-beautiful-sky
       text: It's a shimmering [rooftop-rft-3], with some [vents-rft], a [ledge-rft] and some pipes lying around. $rooftop_characteristics$
