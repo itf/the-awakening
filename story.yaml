@@ -16,7 +16,7 @@
 # OBS:
 # The code make use of the id of the words, in such a way that if there is more than one of the same word on the screen, only one of them will be accessed.
 #
-# Timed Events (BETA and in construction):
+# Timed Events: have a time and an array "e", which has the same syntax as the actions.
 ###############
 
 begin:
@@ -24,7 +24,20 @@ begin:
 
 rooftop-start:
     - cond: 
-        flags: rooftop-darkness
+        flags: 
+          - rooftop-darkness-forest
+          - f-left-rooftop
+      text: You are back on this nice and dark  [rooftop-rft-1]. $rooftop_state$
+    - cond: 
+        flags: f-beautiful-sky
+      text: You are back on this moonlit [rooftop-rft-1]. $rooftop_state$
+    - cond: 
+        flags: 
+          - f-dark-sky
+          - f-left-rooftop
+      text: You are back on this [dark-rft] [rooftop-rft-1]. $rooftop_state$
+    - cond: 
+        flags: rooftop-darkness-forest
       text: It is nice and dark on this [rooftop-rft-1]. $rooftop_state$
     - cond: 
         flags: f-beautiful-sky
@@ -54,7 +67,7 @@ rooftop-vents:
   text: You walk towards the [vents-rft-2] and notice that they are open$rooftop_vents$ 
 
 rooftop-vents-inside:
-  text: ", so you decide to enter them. <br>Inside the [vents-rft-3], it is too dark to see anything$rooftop_vents_2$ "
+  text: ", so you decide to investigate them. <br>Inside the [vents-rft-3], it is too dark to see anything$rooftop_vents_2$ "
 
 rooftop-vents-stop-entering:
   text: ", so you decide not to enter. You tremble at the view of this dark entrance under this somber sky. <br><br> Maybe if you were more used to the darkness you would venture inside the vents."
@@ -71,7 +84,7 @@ rooftop-vents-escape-shadows:
         shadows-rft
 
 rooftop-vents-inside-2:
-  - text: ", but you are hardcore and decide to continue. <br> <br> Even without your headlamp you keep crawling relentlessly through the ventilation pipes. 
+  - text: ", but you are [hardcore3] and decide to continue. <br> <br> Even without your headlamp you keep crawling relentlessly through the ventilation pipes. 
 <br> <br>
 The moonlight, entering through the vent allowed you to avoid falling to the basement through one of the pipes near the entrance.
 <br><br>
@@ -79,7 +92,7 @@ However you didn't notice that ahead on your path was a second vertical pipe con
     cond:
       flags:
           f-beautiful-sky
-  - text: ", but you are hardcore and decide to continue. <br> <br> Even without your headlamp you keep crawling relentlessly through the ventilation pipes.
+  - text: ", but you are [hardcore3] and decide to continue. <br> <br> Even without your headlamp you keep crawling relentlessly through the ventilation pipes.
 <br> <br>
 You didn't notice that ahead on your path was a vertical pipe connected to the basement, and tried crawling over it."
 
@@ -106,15 +119,18 @@ rooftop-shadows-state:
         - f-escaped-shadows-rft
 
 rooftop-dark-escaped-shadows:
-  text: You feel a bit at home in this [darkness-rft]$rooftop-darkness$ 
+  text: You feel a bit at [home-rft] in this [darkness-rft]$rooftop-darkness$ 
   cond:
     flags:
       - f-escaped-shadows-rft
 
 rooftop-darkness-forest:
-  text: "; it reminds you of the forests you used to explore. $rooftop-darkness-forest$"
+  text: "; it reminds you of the dark [forests-rft] of horror movies that you used to laugh about. $rooftop-darkness-forest$"
 
 rooftop-night:
+    - text: It's a lovely [night-rft-sky] on the [rooftop-rft-2]. $sky_state$
+      cond:
+        flags: f-beautiful-sky
     - text: It's just another [night-rft-sky] on the [rooftop-rft-2]. $sky_state$
       cond:
         flags: f-dark-sky
@@ -124,7 +140,7 @@ rooftop-dark-night:
     text: The [sky-rft-sky] is [dark-rft-sky].
     
 rooftop-beautiful-night:
-    text: You see the [beautiful-rft-sky] night [sky-rft-sky]$beautiful_sky_state$
+    text: You see the [beautiful-rft-sky] night [sky-rft-sky]$sky_comp1$$beautiful_sky_state$
 
 rooftop-moon-shining:
     text: ", where the [moon-rft-sky] is shining brightly. $moon-shining$"
@@ -139,15 +155,23 @@ rooftop-moon-forest-3:
   text: <br> You can almost feel the smell from the fallen [leaves-rft]$moon-leaves$
 
 rooftop-moon-forest-bark-smell:
-  text: ", as well as the smell from the tree barks. $tree-barks$"
+  text: ", as well as the smell of tree trunks. $tree-barks$"
 
 rooftop-forest-transition:
   text: <br> The [forest-rft-frt]. $forest-forest$
 
+rooftop-sky-full-stars:
+  - cond:
+      prob: 0.1
+    text: ", full of twinkling stars"
+  - text: ", full of stars"
 
 
-forest-start:
-  text: <br><br>You find yourself in a forest.
+forest-start-light:
+  text: <br><br>You find yourself in a [forest-frt-light].
+
+forest-start-dark:
+  text: <br><br>You find yourself in a [forest-frt-dark].
 .:
   text: .
   
@@ -179,12 +203,11 @@ rooftop-rft-1:
 rooftop-rft-2:
     word: rooftop
     click:
-        - cond:
-          flags: 
-          subs:
+        - subs:
             start: rooftop-start
-          rm-flags: 
-
+    style: 
+        - flags: f-dark-sky
+          s: dark_word 
 rooftop-rft-3:
     word: rooftop
     click:
@@ -249,11 +272,18 @@ night-rft-sky:
     click:
         - subs:
             sky_state: rooftop-dark-night
+          cond:
+            not_flags: f-left-rooftop
+              
 
 
 sky-rft-sky:
     word: sky
     click:
+        - subs:
+            sky_comp1: rooftop-sky-full-stars
+          cond:
+            flags: rooftop-moon-forest
         - subs:
             sky_state: rooftop-beautiful-night
             beautiful_sky_state: .
@@ -262,6 +292,8 @@ sky-rft-sky:
     
 dark-rft-sky:
     word: dark
+    style: 
+        - s: dark_word 
     click:
         - subs:
           flags: 
@@ -369,6 +401,7 @@ forest-rft:
     - cond:
         flags:
           f-leaves-rft
+      flags: f-left-rooftop
       subs:
         tree-barks: rooftop-forest-transition
     - subs:
@@ -387,11 +420,43 @@ forest-rft-frt:
   word: forest
   click:
     subs:
-      forest-forest: forest-start
+      forest-forest: forest-start-light
 
+home-rft:
+  word: home
+  click:
+    subs:
+      rooftop-darkness: ", it's been a while since you've felt at home." 
+
+forests-rft:
+  word: forests
+  click:
+    subs: 
+      rooftop-darkness-forest: "You imagine what it would be like to be in one of those [forests-rft-2]. $forests_start$"
+    
+forests-rft-2:
+  word: forests
+  click:
+    subs: 
+      forests_start: forest-start-dark
+    flags: f-left-rooftop
+
+hardcore3:
+  word:
+    - hardcore
+    - dumb
+    - relentless
+
+forest-frt-light:
+  word: forest
+
+forest-frt-dark:
+  word: forest
+      
 undo:
   word: Undo
   click:
     m: True
     end: True
     undo: True
+

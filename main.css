@@ -196,3 +196,16 @@ pre {
 	80% { opacity: 0; }
 	100% { opacity: 0; }
 }
+
+
+span.dark_word {
+  -webkit-animation: dark_word 2s ease-out alternate infinite;
+          animation: dark_word 2s ease-out alternate infinite;
+   text-shadow: -1px 0px 0px transparent;
+}
+
+@-webkit-keyframes dark_word {
+  to {
+    text-shadow: 1px 0px 3px black;
+  }
+}

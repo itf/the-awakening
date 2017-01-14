@@ -37,8 +37,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     var get_substitute_text = function(story_dictionary, text_keyword, flags, text_flags, timed_events){
         var text = story_dictionary[text_keyword];
         if (!text){
-                console.log("UNDEFINED "+ text_keyword);
-                return "--UNDEFINED--";
+                return text_keyword;
         }
         if (text.constructor !== Array){
             text = [text];
@@ -159,6 +158,24 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         }
     }
     
+    var get_style = function(styles_array, text_dict, flags, text_flags, key, timed_events){
+        if (styles_array.constructor !== Array){
+            styles_array = [styles_array];
+        }
+        for (var s in  styles_array){
+            var styles_and_cond = styles_array[s];
+            if (conditions_met(styles_and_cond, flags, text_flags, timed_events)){
+                var styles = styles_and_cond.s;
+                if (styles.constructor !== Array){
+                    styles = [styles];
+                }
+                return styles;
+            }
+        }
+                
+        
+    }
+    
     var get_action_function_array = function(actions_conds_array, text_dict, flags, text_flags, key, timed_events, word_text){ //Key and timed events are only used for timed events
         var function_array = [];
         if (actions_conds_array.constructor !== Array){
@@ -187,7 +204,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 }
                 
                 if (actions.e && actions.time){
-                    function_array.push(()=>add_end_of_timed_event(actions.e, actions.time, key, timed_events, word_text));
+                    function_array.push(()=>add_end_of_timed_event(actions.e, actions.time, key, timed_events, word_text, actions.ce));
                 }
 
                 break;
@@ -203,6 +220,27 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         return dummy_word;
     }
 
+    var get_word_text = function(word){
+        if (typeof word == 'string'){
+            return word;
+        }
+        else if (word.constructor === Array){
+            if (word.length == 3){
+                var word_inner = "";
+                for (var w = 0 ; w<3; w++){
+                    var span_w =  get_dummy_word();
+                    span_w.innerHTML = word[w];
+                    word_inner += span_w.outerHTML;
+                }
+                var word_html = get_dummy_word();
+                word_html.classList.add('cycle3');
+                word_html.innerHTML = word_inner;
+                return word_html.outerHTML;
+                
+            }
+        }
+    }
+    
     var substitute_words = function (html_story, dictionary, text_dict, flags, text_flags, timed_events){
         var original_text = html_story.innerHTML;
         var text_to_substitute = html_story.innerHTML;
@@ -210,8 +248,8 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         for (var key in dictionary){
             var to_substitute = '['+key+']';
             var contains_string = text_to_substitute.includes(to_substitute);
-            var word_text = dictionary[key]['word'];
             if (contains_string){
+                var word_text = get_word_text(dictionary[key]['word']);
                 keys.push(key);
                 var word = get_dummy_word();
                 word.id = key;
@@ -226,6 +264,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
 
         add_interactivity_to_words(keys, dictionary, text_dict, flags, text_flags, timed_events);
         add_auto_events_to_words(keys, dictionary, text_dict, flags, text_flags, timed_events);
+        add_styles_to_words(keys, dictionary, text_dict, flags, text_flags, timed_events);
     }
     
     var add_interactivity_to_words = function(word_keys, dictionary, text_dict, flags, text_flags, timed_events){
@@ -254,7 +293,24 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 word_auto_function();
             }
         }
+    }
     
+    var add_styles_to_words = function(word_keys, dictionary, text_dict, flags, text_flags, timed_events){
+        for (var index in word_keys){
+            var key = word_keys[index];
+            var word_dict_object = dictionary[key];
+            var word_html = document.getElementById(key)
+            if (word_dict_object.style){
+                var style_array = word_dict_object.style;
+                var styles = get_style(style_array, text_dict, flags, text_flags, key, timed_events);
+                if (styles){
+                    for (var s in styles){
+                        word_html.classList.add(styles[s]);
+
+                    }
+                }
+            }
+        }
     }
 
     var remove_markers = function(text){
@@ -379,12 +435,12 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         }
     }
     
-    var add_end_of_timed_event = function(endings, time, key, timed_events, word_text){
+    var add_end_of_timed_event = function(endings, time, key, timed_events, word_text, condition_end){
         if (timed_events[key]){ //It means that the timed event already exists.
             return;
         }
         //else, let's add it.
-        timed_events[key] = new timed_event_word(key, time, endings, word_text);
+        timed_events[key] = new timed_event_word(key, time, endings, word_text, condition_end);
         
     }
     
@@ -535,6 +591,12 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 }
             }
         }
+        var condition_prob = condition.prob;
+        if (condition_prob){
+            if (Math.random()>condition_prob){
+                return false;
+            }
+        }
         return true;
     }
     
@@ -623,7 +685,8 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     var editing_text_helper = function(present_text_keys){
         var subs = document.getElementById("subs");
         var subs2 = document.getElementById("subs2");
-
+        var flags_html = document.getElementById("flags")
+        
         subs.innerHTML = "";
         subs2.innerHTML = "";
 
@@ -633,6 +696,16 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 subs2.innerHTML += " "+new_substituted_text[p];
 
             }
+        }
+        flags_html.innerHTML = "";
+
+        for ( var f in text_flags){
+            flags_html.innerHTML+= "["+f+":"+text_flags[f]+"] ";
+        }
+        flags_html.innerHTML += "<br>";
+
+        for ( var f in flags){
+            flags_html.innerHTML+= "["+f+":"+flags[f]+"] ";
         }
     }
     
@@ -680,12 +753,13 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         setTimeout(timed_run, 100);
     }
     
-    var timed_event_word = function(word_id, max_time, action, word_text){
+    var timed_event_word = function(word_id, max_time, action, word_text, condition_end){
         this.word_id = word_id;
         this.max_time = max_time;
         this.action = action;
         this.time = 0;
         this.word_text = word_text;
+        this.condition_end = condition_end;
         this.update_style = function(){
             var words_html = document.getElementsByClassName(this.word_id);
             var len_words = words_html.length;
@@ -727,6 +801,12 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             word.classList.add(this.word_id);
             word.innerHTML = this.word_text;
             return word.outerHTML;
+        }
+        
+        this.get_continue_event = function(){
+            if( !this.condition_end || conditions_met(this.condition_end, flags, text_flags, timed_events)){
+                return true;
+            }
         }
         
     }
