@@ -630,6 +630,17 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         html_story_yaml.value=story_yaml;
         add_functions_to_buttons();
         add_functions_to_content_editable();
+        set_editor();
+    }
+    
+    var set_editor = function(){
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.getSession().setMode("ace/mode/yaml");
+        editor.setValue(story_yaml);
+        editor.getSession().setUseWrapMode(true);
+        editor.getSession().setTabSize(2);
+        add_ctrl_s_editor(document.getElementById("editor"), editor);
     }
     
     var add_functions_to_content_editable = function(){
@@ -639,7 +650,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 e.preventDefault();
             }
         }
-        add_ctrl_s();
+        add_ctrl_s(html_story_yaml);
     }
     
     var reload_yaml_from_html = function(){
@@ -675,11 +686,20 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         toggle_button.addEventListener("click", toggle_editing, false); 
     }
     
-    var add_ctrl_s = function(){
+    var add_ctrl_s = function(html_story_yaml){
         html_story_yaml.addEventListener("keydown", function(e) {
             if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
                 e.preventDefault();
                 downloadInnerHtml("story.yaml", html_story_yaml, "yaml");
+            }
+        }, false);
+    }
+    
+    var add_ctrl_s_editor = function(el, editor){
+        el.addEventListener("keydown", function(e) {
+            if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+                e.preventDefault();
+                downloadText("story.yaml", editor.getValue(), "yaml");
             }
         }, false);
     }
@@ -713,11 +733,14 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     var downloadInnerHtml = function(filename, el, mimeType) {
         var elHtml = el.value;
+        downloadText(filename, elHtml, mimeType);
+    }
+    
+    var downloadText = function(filename, text, mimeType) {
         var link = document.createElement('a');
         mimeType = mimeType || 'text/plain';
-
         link.setAttribute('download', filename);
-        link.setAttribute('href', 'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(elHtml));
+        link.setAttribute('href', 'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(text));
         link.click(); 
     }
     

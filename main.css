@@ -212,3 +212,8 @@ pre {
     text-shadow: 1px 0px 3px black;
   }
 }
+
+#editor { 
+        position: relative;
+        height: 80vh;
+    }
