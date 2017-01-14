@@ -199,6 +199,10 @@ rooftop-rft-1:
             - f-investigate-rooftop: 1
           subs:
             rooftop_state: rooftop-dark-state
+    style:
+      - flags:
+          shadows-rft
+        s: dark_word
               
 rooftop-rft-2:
     word: rooftop
@@ -245,6 +249,9 @@ dark-rft:
               rooftop_state: rooftop-shadows-state
             body_class:
               flash-dark
+    style:
+      - s: dark_word
+        not_flags: f-escaped-shadows-rft
 
 darkness-rft:
   word: darkness
@@ -348,6 +355,7 @@ vents-rft-3:
         flags: shadows-rft
       subs:
         rooftop_vents_2: rooftop-vents-escape-shadows
+        rooftop_state: ""
     - cond:
         flags:
           f-dark-sky
