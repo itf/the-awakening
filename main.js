@@ -10,7 +10,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     'use strict';
     var story = yaml.load(story_yaml);
     var start_text = story.begin.text;
-    var substitute_text_dictionary = {"start": "rooftop-start"};
+    var substitute_text_dictionary = {"start": "rooftop-start", "options":"OPTIONS"};
     var previous_substituted_text = [];
     var new_substituted_text = [];
     var html_story = document.getElementById("story");
@@ -138,6 +138,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             return null;
         }
         else{
+            function_array.unshift(clean_timed_events);
             function_array.push(generate_story);
             return function_array_to_function(function_array);
         }
@@ -188,12 +189,12 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                     return [];
                 }
 
+                if (actions.rm_flags){
+                    function_array.push(()=>remove_flags(actions.rm_flags, flags, timed_events));
+                }
                 function_array.push(()=>add_to_substitute_dict(actions.subs, text_dict));
                 if (actions.flags){
                     function_array.push(()=>add_flags(actions.flags, flags));
-                }
-                if (actions.rm_flags){
-                    function_array.push(()=>remove_flags(actions.rm_flags, flags, timed_events));
                 }
                 if (actions.body_class){
                     function_array.push(()=>add_styles_to_body(actions.body_class));
@@ -647,7 +648,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     }
     
     var restart_story = function(){
-        substitute_text_dictionary = {"start": "rooftop-start"};
+        substitute_text_dictionary = {"start": "rooftop-start", "options":"OPTIONS"};
         previous_substituted_text = [];
         new_substituted_text = [];
         flags = {}; //Flags set by words. Permanent
@@ -655,6 +656,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         p_styles = []; // Permanent styles applied to the body
         t_styles = []; // Temporary styles applied to the body
         previous_states=[]; // For undo.
+        timed_events={};
         generate_story();   
     }
     
@@ -735,6 +737,16 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     }
     
     //Timed events
+    
+    var clean_timed_events = function(){
+        for( var index in timed_events){
+            var event = timed_events[index];
+            if (!event.get_continue_event()){
+                delete timed_events[index];
+            }
+        }
+    }
+    
     var timed_run = function (){
         //do stuff
         var timed_html = document.getElementById("timed_words");

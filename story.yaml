@@ -20,22 +20,9 @@
 ###############
 
 begin:
-    text: $start$ $end$ $end2$
+    text: $start$ $end$ $end2$ $options$
 
 rooftop-start:
-    - cond: 
-        flags: 
-          - rooftop-darkness-forest
-          - f-left-rooftop
-      text: You are back on this nice and dark  [rooftop-rft-1]. $rooftop_state$
-    - cond: 
-        flags: f-beautiful-sky
-      text: You are back on this moonlit [rooftop-rft-1]. $rooftop_state$
-    - cond: 
-        flags: 
-          - f-dark-sky
-          - f-left-rooftop
-      text: You are back on this [dark-rft] [rooftop-rft-1]. $rooftop_state$
     - cond: 
         flags: rooftop-darkness-forest
       text: It is nice and dark on this [rooftop-rft-1]. $rooftop_state$
@@ -144,9 +131,10 @@ rooftop-beautiful-night:
 
 rooftop-moon-shining:
     text: ", where the [moon-rft-sky] is shining brightly. $moon-shining$"
+    flags: f-beautiful-sky
 
 rooftop-moon-forest:
-    text: "<br> The bright moonlight is reflected by the crowns of some [trees-rft-sky] by the horizon$moon-tree$"
+    text: "<br> The bright moonlight is reflected by the crowns of some [trees-rft-sky] by the [horizon-rft]$moon-tree$"
 
 rooftop-moon-forest-2:
    text: ". <br> <br> Your eyes are drawn to the [forest-rft] ahead. $moon-forest$"
@@ -158,7 +146,7 @@ rooftop-moon-forest-bark-smell:
   text: ", as well as the smell of tree trunks. $tree-barks$"
 
 rooftop-forest-transition:
-  text: <br> The [forest-rft-frt]. $forest-forest$
+  text: <br> The [forest-rft-frt]. 
 
 rooftop-sky-full-stars:
   - cond:
@@ -167,19 +155,97 @@ rooftop-sky-full-stars:
   - text: ", full of stars"
 
 
+##############
+# Forest?
+
 forest-start-light:
-  text: <br><br>You find yourself in a [forest-frt-light].
+  text: For some reason you have memories of a [rooftop-rft-1], but your mind feels [blurry-frt-light].  <br> You find yourself in a [forest-frt-light]. $forest-start-2$
+
+blurry-frt-light:
+  word: blurry
+  click: 
+    subs: 
+      forest-start-2: forest-light-blurry
+
+forest-light-blurry:
+  text:
+    The trees seem to be moving, as if you had lost control of your own mind. $forest-light-1$
+
+forest-start-light-2:
+  text:  You can feel the smell from the fallen leaves, as well as the smell of tree [trunks-frt-light].<br>  $forest-light-1$
+
+forest-frt-light:
+  word: forest
+  auto:
+    - time: 13
+      e:
+        subs: 
+          forest-light-hiding: forest-light-kid-noises
+        flags:
+          f-forest-kid-noise
+      cond: 
+        flags: forest-behind-trunks
+        not_flags: f-forest-kid-noise
+    - time: 5
+      e:
+        subs:
+          forest-light-1: forest-light-noises
+        flags: f-forest-light-noises
+      cond:
+        not_flags: f-forest-light-noises
+  click: 
+    subs: 
+      forest-start-2: forest-start-light-2
+
+
+trunks-frt-light:
+  word: trunks
+  click:
+    cond:
+      flags: forest-light-noises
+    subs: 
+      forest-light-1: forest-behind-trunks
+
+
+forest-light-noises:
+  text: Instead of the usual quietness you expected, you hear some [noises-frt-light] on the distance.
+
+
+forest-behind-trunks:
+  text: Feeling worried about the atmosphere around, you hide behind a tree trunk. As you are doing so you see a figure passing by where you were. $forest-light-hiding$
+
+forest-light-kid-noises:
+  text: <br><br> On the distance you hear a kid's cry.
+
+noises-frt-light:
+  word: noises
+  click:
+    subs:
+      end: "<br> You decide to investigate what those noises could be, even though anything could be avoiding the moonlight, hiding in the shadows. <br> <br>You couldn't see what caught you."
+      end2: END
+    body_class:
+      flash-red
+    
 
 forest-start-dark:
-  text: <br><br>You find yourself in a [forest-frt-dark].
+  text: For some reason you have some distant memories of a [rooftop-rft-1], but your mind feels blurry. <br> You find yourself in a [forest-frt-dark].
+
+forest-frt-dark:
+  word: forest
+
 .:
   text: .
   
 END:
     text: <br><br> ✴✴✴  ✴✴✴ <br> [undo]?
+    flags:
+      END
 
 END-SHADOW:
    text: <br><br> The shadows caught you.
+
+OPTIONS:
+    text: ""
   
 
 ################################
@@ -251,12 +317,14 @@ dark-rft:
               flash-dark
     style:
       - s: dark_word
-        not_flags: f-escaped-shadows-rft
+        not_flags: 
+          - f-escaped-shadows-rft
+          - shadows-rft
 
 darkness-rft:
   word: darkness
   click:
-    - body_style: 
+    - body_class: 
         flash-dark
       subs:
         rooftop-darkness: rooftop-darkness-forest
@@ -428,7 +496,8 @@ forest-rft-frt:
   word: forest
   click:
     subs:
-      forest-forest: forest-start-light
+      start: forest-start-light
+      forest-start-2: forest-start-light-2
 
 home-rft:
   word: home
@@ -440,13 +509,13 @@ forests-rft:
   word: forests
   click:
     subs: 
-      rooftop-darkness-forest: "You imagine what it would be like to be in one of those [forests-rft-2]. $forests_start$"
+      rooftop-darkness-forest: "You imagine what it would be like to be in one of those [forests-rft-2]. "
     
 forests-rft-2:
   word: forests
   click:
     subs: 
-      forests_start: forest-start-dark
+      start: forest-start-dark
     flags: f-left-rooftop
 
 hardcore3:
@@ -455,12 +524,18 @@ hardcore3:
     - dumb
     - relentless
 
-forest-frt-light:
-  word: forest
 
-forest-frt-dark:
-  word: forest
       
+horizon-rft:
+  word: horizon
+  click:
+    time: 20
+    e:
+      subs:
+        moon-shining: "You contemplate the sky and the horizon."
+    ce:
+      flags: delete #Assures any click deletes it
+        
 undo:
   word: Undo
   click:

@@ -153,14 +153,17 @@ pre {
 }
 
 .flash-red {
+	color: #ddcdcd;
     animation: 
        flashRed 1.0s steps(40, end);
     background: #000;
 }
 
 @keyframes flashRed {
-  from { background: #8A0707 }
-  to { background: #000 }
+  from { background: #8A0707;
+  		 color: #555; }
+  to { background: #000;
+  	   color: #ddd;}
 }
 
 .hidden{
@@ -189,18 +192,18 @@ pre {
 }
 @-webkit-keyframes topToBottom{
 	0% { opacity: 0; }
-	5% { opacity: 0; -webkit-transform: translateY(-50px); }
-	10% { opacity: 1; -webkit-transform: translateY(0px); }
+	0% { opacity: 0; -webkit-transform: translateY(-60%); }
+	5% { opacity: 1; -webkit-transform: translateY(0px); }
 	25% { opacity: 1; -webkit-transform: translateY(0px); }
-	30% { opacity: 0; -webkit-transform: translateY(50px); }
+	33% { opacity: 0; -webkit-transform: translateY(60%); }
 	80% { opacity: 0; }
 	100% { opacity: 0; }
 }
 
 
-span.dark_word {
-  -webkit-animation: dark_word 2s ease-out alternate infinite;
-          animation: dark_word 2s ease-out alternate infinite;
+.dark_word {
+  -webkit-animation: dark_word 2s steps(10) alternate infinite;
+          animation: dark_word 2s steps(10) alternate infinite;
    text-shadow: -1px 0px 0px transparent;
 }
 
