@@ -166,6 +166,20 @@ pre {
   	   color: #ddd;}
 }
 
+.get-dark {
+	color: #ddcdcd;
+    animation: 
+       flashRed 1.0s steps(40, end);
+    background: #000;
+}
+
+@keyframes getDark {
+  from { background: #ffffff;
+  		 color: #555; }
+  to { background: #000;
+  	   color: #ddd;}
+}
+
 .hidden{
     display: none;
 }
@@ -174,19 +188,19 @@ pre {
 	width: auto;
 
 }
-.cycle3 span{
+.cycle3>span{
 	-webkit-animation: topToBottom 7.5s linear infinite 0s;
 	opacity: 0;
 	overflow: hidden;
 		position: absolute;
 	vertical-align: bottom;
 }
-.cycle3 span:nth-child(2){
+.cycle3>span:nth-child(2){
 	position: absolute;
 	-webkit-animation-delay: 2.5s;
 
 }
-.cycle3 span:nth-child(3){
+.cycle3>span:nth-child(3){
 	position: static;
 	-webkit-animation-delay: 5s;
 }
@@ -217,3 +231,23 @@ pre {
         position: relative;
         height: 80vh;
     }
+
+#editing-1{
+	color: #444;
+	position:absolute;
+	right: 5%;
+	top: 1%;
+	padding-left: 1%;
+	width: 20%;
+	background :white;
+}
+
+#editing-2{
+	color: #444;
+	position:absolute;
+	left: 5%;
+	top: 5%;
+	padding-left: 1%;
+	width: 20%;
+	background :white;
+}

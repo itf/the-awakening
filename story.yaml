@@ -17,6 +17,8 @@
 # The code make use of the id of the words, in such a way that if there is more than one of the same word on the screen, only one of them will be accessed.
 #
 # Timed Events: have a time and an array "e", which has the same syntax as the actions.
+# ce is what checks if the timed event should keep existing after something happen 
+# ce = condition end
 ###############
 
 begin:

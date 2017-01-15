@@ -19,7 +19,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     var text_flags = {}; // Flags set by text Temporary
     
     var permanent_styles_list = []; //Defines which styles for the body are permanent ones
-    var temporary_styles_list = ["flash-dark", "flash-red"]; //Defines which styles for the body are temporary ones, such as dark flashes.
+    var temporary_styles_list = ["flash-dark", "flash-red", "get-dark"]; //Defines which styles for the body are temporary ones, such as dark flashes.
     
     var p_styles = []; // Permanent styles applied to the body
     var t_styles = []; // Temporary styles applied to the body
@@ -30,6 +30,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     //For debugging: 
     var html_story_yaml = document.getElementById("story_yaml");
+    var editor;
     
     
     
@@ -634,12 +635,15 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     }
     
     var set_editor = function(){
-        var editor = ace.edit("editor");
+        editor = ace.edit("editor");
         editor.setTheme("ace/theme/monokai");
         editor.getSession().setMode("ace/mode/yaml");
         editor.setValue(story_yaml);
         editor.getSession().setUseWrapMode(true);
         editor.getSession().setTabSize(2);
+        editor.getSession().setUseSoftTabs(true);
+        editor.setShowPrintMargin(false);
+
         add_ctrl_s_editor(document.getElementById("editor"), editor);
     }
     
@@ -655,6 +659,11 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     var reload_yaml_from_html = function(){
         story = yaml.load(html_story_yaml.value);
+        generate_story();
+    }
+    
+    var reload_yaml_from_editor = function(){
+        story = yaml.load(editor.getValue());
         generate_story();
     }
     
@@ -678,8 +687,10 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
         
     var add_functions_to_buttons = function(){
-        var reload_button = document.getElementById("reload_yaml");
+        var reload_button = document.getElementById("reload_yaml2");
         reload_button.addEventListener("click", reload_yaml_from_html, false); 
+        var reload_button = document.getElementById("reload_yaml1");
+        reload_button.addEventListener("click", reload_yaml_from_editor, false); 
         var restart_button = document.getElementById("restart");
         restart_button.addEventListener("click", restart_story, false); 
         var toggle_button = document.getElementById("toggle_editing");
@@ -714,8 +725,8 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
 
         for ( var p in substitute_text_dictionary){
             if (present_text_keys.includes(substitute_text_dictionary[p])){
-                subs.innerHTML += "[" + p + " "+ substitute_text_dictionary[p] + "] ";
-                subs2.innerHTML += " "+new_substituted_text[p];
+                subs.innerHTML += "[" + p + " -> "+ substitute_text_dictionary[p] + "] <br>";
+                subs2.innerHTML += " "+new_substituted_text[p] + "<br>";
 
             }
         }
