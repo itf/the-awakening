@@ -16,6 +16,8 @@ body {
     padding: 2em 2em 4em;
 }
 
+
+
 h1, h2, h3, h4, h5, h6 {
     color: #222;
     font-weight: 600;
@@ -227,27 +229,45 @@ pre {
   }
 }
 
+.moving_word {
+	position:relative;
+  -webkit-animation: moving_word 2s steps(10) alternate infinite;
+          animation: moving_word 2s steps(10) alternate infinite;
+   left: -1px;
+}
+
+@-webkit-keyframes moving_word {
+  to {
+    left: 1px;;
+  }
+}
 #editor { 
         position: relative;
         height: 80vh;
     }
 
-#editing-1{
-	color: #444;
-	position:absolute;
-	right: 5%;
-	top: 1%;
-	padding-left: 1%;
-	width: 20%;
-	background :white;
-}
+@media (min-device-width: 1224px) {
+  	body {
+  	width: 40%;
+  }
 
-#editing-2{
-	color: #444;
-	position:absolute;
-	left: 5%;
-	top: 5%;
-	padding-left: 1%;
-	width: 20%;
-	background :white;
-}
+	#editing-1{
+		color: #444;
+		position:absolute;
+		right: 5%;
+		top: 1%;
+		padding-left: 1%;
+		width: 20%;
+		background :white;
+	}
+
+	#editing-2{
+		color: #444;
+		position:absolute;
+		left: 5%;
+		top: 5%;
+		padding-left: 1%;
+		width: 20%;
+		background :white;
+	}
+  }

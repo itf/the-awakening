@@ -17,6 +17,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     var flags = {}; //Flags set by words. Permanent
     var text_flags = {}; // Flags set by text Temporary
+    var temporary_flags = {}
     
     var permanent_styles_list = []; //Defines which styles for the body are permanent ones
     var temporary_styles_list = ["flash-dark", "flash-red", "get-dark"]; //Defines which styles for the body are temporary ones, such as dark flashes.
@@ -139,7 +140,6 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             return null;
         }
         else{
-            function_array.unshift(clean_timed_events);
             function_array.push(generate_story);
             return function_array_to_function(function_array);
         }
@@ -155,7 +155,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             return null;
         }
         else{
-            function_array.push(generate_story);
+            function_array.push(()=>generate_story());
             return function_array_to_function(function_array);
         }
     }
@@ -196,6 +196,9 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 function_array.push(()=>add_to_substitute_dict(actions.subs, text_dict));
                 if (actions.flags){
                     function_array.push(()=>add_flags(actions.flags, flags));
+                }
+                if (actions.tflags){
+                    function_array.push(()=>add_flags(actions.tflags, temporary_flags));
                 }
                 if (actions.body_class){
                     function_array.push(()=>add_styles_to_body(actions.body_class));
@@ -376,6 +379,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             p_styles = old_state[5];
             t_styles = old_state[6];
             timed_events = old_state[7];
+            temporary_flags = old_state[8];
         }
     }
 
@@ -421,6 +425,18 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         }
     
     }
+    
+    var decrease_temporary_flags =  function(temporary_flags){
+        for (var f in temporary_flags){
+            temporary_flags[f]-=1;
+            if (temporary_flags[f]==0){
+                delete temporary_flags[f];
+            }
+        }
+    
+    }
+    
+    
     
     var add_styles_to_body = function(styles){
         if (styles.constructor !== Array){
@@ -547,6 +563,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     }
     
     var conditions_met = function(condition, flags, text_flags, timed_events){
+        var all_flags = Object.assign({}, flags, text_flags, temporary_flags);
         var condition_flags = condition.flags;
         if (condition_flags){
             if (condition_flags.constructor !== Array){
@@ -556,6 +573,9 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                 var flag = condition_flags[f];
                 var value = 0;
                 var flag_name;
+                if (flag===true){
+                    continue;
+                }
                 if (typeof flag == 'string'){
                     flag_name = flag;
                     value = 1;
@@ -565,7 +585,8 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                         value = flag[flag_name]
                     }
                 }
-                if ((!flags[flag_name] || flags[flag_name]<value) && (!text_flags[flag_name] || text_flags[flag_name]<value) && !timed_events[flag_name]){
+  
+                if ((!all_flags[flag_name] || all_flags[flag_name]<value)  && !timed_events[flag_name]){
                     return false;
                 }
             }
@@ -588,7 +609,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                         value = flag[flag_name]
                     }
                 }
-                if ((flags[flag_name] && flags[flag_name]>=value) || (text_flags[flag_name] && text_flags[flag_name]>=value) || timed_events[flag_name]){
+                if ((all_flags[flag_name] && all_flags[flag_name]>=value) ||  timed_events[flag_name]){
                     return false;
                 }
             }
@@ -619,7 +640,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     }
 
     var push_story_state = function(previous_states, text_flags,flags,substitute_text_dictionary,previous_substituted_text,new_substituted_text, p_styles, t_styles){
-        previous_states.unshift([clone_object(text_flags),clone_object(flags),clone_object(substitute_text_dictionary),clone_object(previous_substituted_text),clone_object(new_substituted_text), clone_object(p_styles), clone_object(t_styles), clone_object(timed_events)]);
+        previous_states.unshift([clone_object(text_flags),clone_object(flags),clone_object(substitute_text_dictionary),clone_object(previous_substituted_text),clone_object(new_substituted_text), clone_object(p_styles), clone_object(t_styles), clone_object(timed_events), clone_object(temporary_flags)]);
         if (previous_states.length>10){
             previous_states.length=10;
         }
@@ -695,6 +716,8 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         restart_button.addEventListener("click", restart_story, false); 
         var toggle_button = document.getElementById("toggle_editing");
         toggle_button.addEventListener("click", toggle_editing, false); 
+        var undo_button = document.getElementById("undo_button");
+        undo_button.addEventListener("click", ()=>(undo_story(), generate_story()), false); 
     }
     
     var add_ctrl_s = function(html_story_yaml){
@@ -775,7 +798,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     var clean_timed_events = function(){
         for( var index in timed_events){
             var event = timed_events[index];
-            if (!event.get_continue_event()){
+            if (event.get_end_event()){
                 delete timed_events[index];
             }
         }
@@ -792,20 +815,20 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             timed_html.innerHTML+= event.get_word_copy()+" ";
             event.update_time(0.1);
             event.update_style();
-            if (event.perform_action()){
+            if (text_flags['END'] || event.perform_action()){
                 delete timed_events[index];
             }
         }
         setTimeout(timed_run, 100);
     }
     
-    var timed_event_word = function(word_id, max_time, action, word_text, condition_end){
+    var timed_event_word = function(word_id, max_time, action, word_text, condition_continue){
         this.word_id = word_id;
         this.max_time = max_time;
         this.action = action;
         this.time = 0;
         this.word_text = word_text;
-        this.condition_end = condition_end;
+        this.condition_continue = condition_continue;
         this.update_style = function(){
             var words_html = document.getElementsByClassName(this.word_id);
             var len_words = words_html.length;
@@ -836,7 +859,7 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
                     my_actions[f]();
                 }
                 this.remove_style();
-                generate_story();
+                generate_story(false);
                 return true;  
             }
             return false;   
@@ -849,10 +872,11 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             return word.outerHTML;
         }
         
-        this.get_continue_event = function(){
-            if( !this.condition_end || conditions_met(this.condition_end, flags, text_flags, timed_events)){
-                return true;
+        this.get_end_event = function(){
+            if(!this.condition_continue || conditions_met(this.condition_continue, flags, text_flags, timed_events)){
+                return false;
             }
+            return true;
         }
         
     }
@@ -860,13 +884,18 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     //Generate story
     
-    var generate_story = function(){
-        push_story_state(previous_states, text_flags,flags,substitute_text_dictionary,previous_substituted_text,new_substituted_text, p_styles, t_styles);
+    var generate_story = function(push_state){
+        if(push_state===undefined || push_state == true){
+            push_story_state(previous_states, text_flags,flags,substitute_text_dictionary,previous_substituted_text,new_substituted_text, p_styles, t_styles);
+        }
         new_substituted_text={};
         var present_text_keys = [];
         var text = substitute_text(start_text, substitute_text_dictionary, story, previous_substituted_text, new_substituted_text, undefined, flags, text_flags, present_text_keys, timed_events);
         previous_substituted_text=new_substituted_text;
         delete_unused_text_flags(text_flags, present_text_keys);
+        clean_timed_events();
+        decrease_temporary_flags(temporary_flags);
+        timed_events;
         proccess_words(html_story, text, story, substitute_text_dictionary, flags, text_flags, timed_events);
         var body = document.getElementById("text-background");
         apply_styles_to_el(t_styles,p_styles,body);

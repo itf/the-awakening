@@ -168,6 +168,8 @@ blurry-frt-light:
   click: 
     subs: 
       forest-start-2: forest-light-blurry
+  style:
+  - s: moving_word
 
 forest-light-blurry:
   text:
@@ -188,6 +190,8 @@ forest-frt-light:
       cond: 
         flags: forest-behind-trunks
         not_flags: f-forest-kid-noise
+      ce: 
+        flags: forest-start-light
     - time: 5
       e:
         subs:
@@ -195,6 +199,8 @@ forest-frt-light:
         flags: f-forest-light-noises
       cond:
         not_flags: f-forest-light-noises
+      ce: 
+        flags: forest-start-light
   click: 
     subs: 
       forest-start-2: forest-start-light-2
@@ -207,6 +213,8 @@ trunks-frt-light:
       flags: forest-light-noises
     subs: 
       forest-light-1: forest-behind-trunks
+    flags:
+      f-forest-behind-trunks
 
 
 forest-light-noises:
@@ -217,7 +225,59 @@ forest-behind-trunks:
   text: Feeling worried about the atmosphere around, you hide behind a tree trunk. As you are doing so you see a figure passing by where you were. $forest-light-hiding$
 
 forest-light-kid-noises:
-  text: <br><br> On the distance you hear a kid's cry.
+  text: <br><br> In the [distance-frt-light] you hear a [kid-frt-light]'s [cry-frt-light]. $kid-comment$$kid-comment-2$ 
+
+kid-frt-light:
+  word: kid
+  click:
+    - subs:
+        kid-comment-2: forest-light-approach-kid
+      cond:
+        flags:  forest-light-kid-uneasy
+    - subs:
+        kid-comment: forest-light-kid-uneasy
+
+      
+
+forest-light-kid-uneasy:
+  text: It's been a very long time since you've seen another person... You feel uneasy.
+
+forest-light-approach-kid:
+  text: <br> You walk toward the [source-frt-light] of the scream, using the moonlight shining through the trees to guide you. $forest-approached-kid$
+  
+source-frt-light:
+  word:
+    source
+  click:
+    flags:
+      f-found-kid
+    subs:
+      forest-approached-kid: <br> Eventually, you find a child in fetal position, with their back on a tree.
+
+cry-frt-light:
+  word: cry
+  click:
+    subs:
+      kid-comment: forest-kid-cry-help
+
+forest-kid-cry-help:
+  text: It's a [terrified-frt-light] cry for [help-frt-light]. $kid-cry-help$
+
+terrified-frt-light:
+  word: terrified
+  style:
+    s:
+      moving_word
+
+help-frt-light:
+  word: help
+
+distance-frt-light:
+  word: distance
+  click:
+    cond:
+      flags:
+        forest-kid-cry-help
 
 noises-frt-light:
   word: noises
@@ -227,6 +287,24 @@ noises-frt-light:
       end2: END
     body_class:
       flash-red
+  auto:
+    e:
+      subs:
+        end: "<br> You stand in place, even though anything could be avoiding the moonlight, hiding in the shadows. <br> <br>You couldn't see what caught you."
+        end2: END
+      body_class:
+        flash-red
+    cond:
+      not_flags: f-forest-behind-trunks
+    flags:
+      f-light-frt-noises
+    ce: 
+      not_flags:
+        f-forest-behind-trunks
+      flags: 
+        forest-start-light
+    time:
+      10
     
 
 forest-start-dark:
@@ -532,11 +610,13 @@ horizon-rft:
   word: horizon
   click:
     time: 20
+    tflags: t-horizon
     e:
       subs:
         moon-shining: "You contemplate the sky and the horizon."
     ce:
-      flags: delete #Assures any click deletes it
+      flags: 
+        t-horizon #Assures any click deletes it
         
 undo:
   word: Undo
