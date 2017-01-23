@@ -173,10 +173,10 @@ blurry-frt-light:
 
 forest-light-blurry:
   text:
-    The trees seem to be moving, as if you had lost control of your own mind. $forest-light-1$
+    The [trees-frt-light] seem to be moving, as if you had lost control of your own mind. $forest-light-1$
 
 forest-start-light-2:
-  text:  You can feel the smell from the fallen leaves, as well as the smell of tree [trunks-frt-light].<br>  $forest-light-1$
+  text:  You can feel the [smell-frt-light] from the fallen leaves, as well as the smell of tree [trunks-frt-light].<br>  $forest-light-1$
 
 forest-frt-light:
   word: forest
@@ -222,10 +222,10 @@ forest-light-noises:
 
 
 forest-behind-trunks:
-  text: Feeling worried about the atmosphere around, you hide behind a tree trunk. As you are doing so you see a figure passing by where you were. $forest-light-hiding$
+  text: Feeling worried about the atmosphere around, you hide behind a tree trunk. As you are doing so you see a [figure-frt-light] passing by where you were. $forest-light-hiding$
 
 forest-light-kid-noises:
-  text: <br><br> In the [distance-frt-light] you hear a [kid-frt-light]'s [cry-frt-light]. $kid-comment$$kid-comment-2$ 
+  text: <br><br> In the [distance-frt-light] you hear a [kid-frt-light]'s [cry-frt-light]. $kid-comment$ $kid-comment-2$ 
 
 kid-frt-light:
   word: kid
@@ -240,19 +240,76 @@ kid-frt-light:
       
 
 forest-light-kid-uneasy:
-  text: It's been a very long time since you've seen another person... You feel uneasy.
+  text: It's been a very long time since you've seen another person... You feel [uneasy-frt-light].
+  
+uneasy-frt-light:
+  word:   uneasy
+  click:
+    cond: 
+      flags: f-found-kid
+      not_flags:  f-kid-uneasy
+    flags: 
+     - f-kid-uneasy
+     - f-kid-despair
 
 forest-light-approach-kid:
-  text: <br> You walk toward the [source-frt-light] of the scream, using the moonlight shining through the trees to guide you. $forest-approached-kid$
+  text: <br> You walk toward the [source-frt-light] of the scream, using the [moonlight-frt-light] shining through the trees to guide you. $forest-approached-kid$
   
+moonlight-frt-light:
+  word: moonlight
+  click:
+    cond: 
+      flags: f-found-kid
+      not_flags:  f-kid-moonlight
+    flags: 
+     - f-kid-moonlight
+     - f-kid-despair: -1
+
 source-frt-light:
   word:
     source
   click:
     flags:
-      f-found-kid
+      - f-found-kid
+      - f-kid-despair: 5
     subs:
-      forest-approached-kid: <br> Eventually, you find a child in fetal position, with their back on a tree.
+       forest-approached-kid: forest-light-child-fetal-position
+    cond:
+      not_flags:
+        f-found-kid
+
+forest-light-child-fetal-position:
+  text: <br> Eventually, you find the [child-frt-light] in fetal position, with his back on a tree. $kid-found-1$ $kid-found-2$ $kid-found-3$
+
+child-frt-light:
+  word: child
+  auto:
+    time: 10
+    e:
+      - subs:
+         kid-found-3: forest-light-kid-feeling-3
+        cond:
+          flags:
+            f-kid-text: 2
+        flags:
+          f-kid-text: 1
+      
+      - subs:
+          kid-found-2: forest-light-kid-feeling-2
+
+        cond:
+          flags: 
+            f-kid-text: 1
+        flags:
+          f-kid-text: 1
+      
+      - subs:
+          kid-found-1: forest-light-kid-feeling-1
+        flags: 
+          f-kid-text: 1
+    cond:
+      not_flags:
+        f-kid-text: 3
 
 cry-frt-light:
   word: cry
@@ -268,16 +325,107 @@ terrified-frt-light:
   style:
     s:
       moving_word
+  click:
+    cond: 
+      flags: f-found-kid
+      not_flags:  f-kid-terrified
+    flags: 
+     - f-kid-terrified
+     - f-kid-despair
+     
+figure-frt-light:
+  word: figure
+  click:
+    cond: 
+      flags: f-found-kid
+      not_flags:  f-kid-figure
+    flags: 
+     - f-kid-figure
+     - f-kid-despair
+     
+smell-frt-light:
+  word: smell
+  click:
+    cond: 
+      flags: f-found-kid
+      not_flags:  f-kid-smell
+    flags: 
+     - f-kid-smell
+     - f-kid-despair: -1
+
+forest-light-kid-feeling-1:
+  - cond: 
+      flags: 
+        f-kid-despair: 10
+    text: You enjoy seeing him sobbing in despair.
+  - cond: 
+      flags: 
+        f-kid-despair: 8
+    text: You can hear him sobbing in despair.
+  - cond: 
+      flags: 
+        f-kid-despair: 6
+    text: He is terrified. Just like a kid would be in the middle of a nightmare...
+  - text: He is scared.
+    cond: 
+      flags: 
+        f-kid-despair: 5
+  - text: He is anxious.
+    cond: 
+      flags: 
+        f-kid-despair: 2
+  - text: He is calm.
+
+forest-light-kid-feeling-2:
+  - text: <br> You will make sure he will never explore outside again. The terrifying figure is coming back and you throw the kid towards it. Even though it is his nightmare, you have more control over it then him.
+    cond:
+      flags: 
+        f-kid-despair: 10
+  - text: You distance yourself from the kid, both physically and empathically.
+    cond:
+      flags: 
+        f-kid-distance
+  - text: <br>The silver light of the moon shines around him, making things look less dark.
+    cond:
+      flags: 
+        f-kid-moonlight
+  - text: <br>The forest is not a place where a kid should be.
+
+forest-light-kid-feeling-3:
+  text: 3
 
 help-frt-light:
   word: help
+  click:
+    cond:
+      flags: f-found-kid
+      not_flags: f-kid-help
+      
+    flags: 
+     - f-kid-help
+     - f-kid-despair: -1
 
 distance-frt-light:
   word: distance
   click:
     cond:
-      flags:
-        forest-kid-cry-help
+      flags: f-found-kid
+      not_flags: f-kid-distance
+    flags: 
+     - f-kid-distance
+     - f-kid-despair
+     
+trees-frt-light:
+  word: trees
+  click:
+    cond:
+      flags: f-found-kid
+      not_flags: f-kid-trees
+    flags: 
+     - f-kid-trees
+     - f-kid-despair
+  style:
+    s: dark_word
 
 noises-frt-light:
   word: noises

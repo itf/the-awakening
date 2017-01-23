@@ -641,8 +641,8 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
 
     var push_story_state = function(previous_states, text_flags,flags,substitute_text_dictionary,previous_substituted_text,new_substituted_text, p_styles, t_styles){
         previous_states.unshift([clone_object(text_flags),clone_object(flags),clone_object(substitute_text_dictionary),clone_object(previous_substituted_text),clone_object(new_substituted_text), clone_object(p_styles), clone_object(t_styles), clone_object(timed_events), clone_object(temporary_flags)]);
-        if (previous_states.length>10){
-            previous_states.length=10;
+        if (previous_states.length>20){
+            previous_states.length=20;
         }
     }
     
@@ -815,8 +815,11 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
             timed_html.innerHTML+= event.get_word_copy()+" ";
             event.update_time(0.1);
             event.update_style();
-            if (text_flags['END'] || event.perform_action()){
+            if (text_flags['END']){
                 delete timed_events[index];
+            }
+            else{
+                 event.perform_action();
             }
         }
         setTimeout(timed_run, 100);
@@ -854,7 +857,9 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         this.perform_action = function(){
             if (this.time > this.max_time){
                 // do stuff
+                delete timed_events[word_id];
                 var my_actions = get_action_function_array(this.action, substitute_text_dictionary, flags, text_flags, this.word_id, timed_events, this.word_text);
+                // Remove it from the timed dictionary:
                 for (var f in my_actions){
                     my_actions[f]();
                 }
@@ -895,7 +900,6 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
         delete_unused_text_flags(text_flags, present_text_keys);
         clean_timed_events();
         decrease_temporary_flags(temporary_flags);
-        timed_events;
         proccess_words(html_story, text, story, substitute_text_dictionary, flags, text_flags, timed_events);
         var body = document.getElementById("text-background");
         apply_styles_to_el(t_styles,p_styles,body);
