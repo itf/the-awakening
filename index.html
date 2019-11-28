@@ -8,8 +8,12 @@
         <meta name="description" content="An interactive getting started guide for Brackets.">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <link rel="stylesheet" href="main.css">
-        <script src="require.js"></script>
+
+        <script src="js-yaml.js"></script>
         <script src="main.js"></script>
+	<script>
+	run_from_yaml_file("./story.yaml");
+	</script>
         <script src="./ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
 
     </head>

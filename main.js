@@ -1,14 +1,35 @@
-require.config({
-    paths : {
-        text: 'text'
-    }
-});
+function loadFile(path, success, error)
+{ //from https://stackoverflow.com/a/18278346/5881930
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function()
+    {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                if (success)
+                    success(xhr.responseText);
+            } else {
+                if (error)
+                    error(xhr);
+            }
+        }
+    };
+    xhr.open("GET", path, true);
+    xhr.send();
+}
 
 
-require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
-    //Global variables
+function run_from_yaml_file(yaml_file) 
+{
+    loadFile(yaml_file, run_yaml, console.log)
+}
+
+//require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
+//Assumes jsyaml has been called previously
+function run_yaml(story_yaml)
+{
+   //Global variables
     'use strict';
-    var story = yaml.load(story_yaml);
+    var story = jsyaml.load(story_yaml);
     var start_text = story.begin.text;
     var substitute_text_dictionary = {"start": "rooftop-start", "options":"OPTIONS"};
     var previous_substituted_text = [];
@@ -914,4 +935,4 @@ require(['text!./story.yaml', 'js-yaml'], function (story_yaml, yaml) {
     
     generate_story();
 
-});
+};
